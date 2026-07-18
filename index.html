@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>こころノート</title>
+<meta name="theme-color" content="#4B4E8C">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="こころノート">
+<style>
+  /* オフラインでも表示が変わらないよう、端末内蔵フォントのみを使用 */
+  :root{
+    --font-body:"Hiragino Kaku Gothic ProN","Hiragino Sans","BIZ UDGothic","Yu Gothic","Noto Sans JP","Meiryo",sans-serif;
+    --font-display:"Hiragino Mincho ProN","BIZ UDMincho","Yu Mincho","Noto Serif JP",serif;
+    --paper:#F8F4EA; --paper-deep:#F0E9D8; --rule:#D9CDB0; --rule-soft:#E8E0CB;
+    --ink:#2B2A24; --ink-soft:#7A7360; --teal:#4B4E8C; --teal-deep:#33355F; --teal-soft:#E4E3F3;
+    --sat:#2F7A6F; --sun:#A2483A; --paper-card:#FEFCF5;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:repeating-linear-gradient(to bottom, transparent, transparent 31px, var(--rule-soft) 32px), var(--paper);
+    color:var(--ink); font-family:var(--font-body); min-height:100vh; padding-bottom:60px;
+  }
+  h1,h2,.serif{font-family:var(--font-display);}
+  header{position:sticky; top:0; z-index:20; background:var(--paper); border-bottom:2px solid var(--teal); padding:10px 14px 8px;}
+  .title-row{display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap;}
+  h1{margin:0; font-size:19px; font-weight:700; letter-spacing:.08em; color:var(--teal-deep);}
+  .week-nav{display:flex; align-items:center; gap:8px; margin-top:8px; flex-wrap:wrap;}
+  .week-nav button{font-family:inherit; border:1px solid var(--teal); background:var(--paper-card); color:var(--teal-deep); border-radius:6px; padding:5px 10px; font-size:13px; cursor:pointer;}
+  .week-nav button:hover{background:var(--teal-soft);}
+  .week-range{font-size:13px; color:var(--ink); font-weight:500; min-width:150px; text-align:center;}
+  .save-status{font-size:11px; color:var(--ink-soft); margin-left:auto;}
+  main{padding:14px;}
+  .card{background:var(--paper-card); border:1px solid var(--rule); border-left:4px solid var(--teal); border-radius:8px; padding:12px 14px; margin-bottom:14px;}
+  .card h2{font-size:14px; margin:0 0 8px; color:var(--teal-deep); font-weight:700; letter-spacing:.04em;}
+  .field-label{font-size:11px; color:var(--ink-soft); margin:8px 0 3px; display:block;}
+  .field-label:first-of-type{margin-top:0;}
+  textarea, select, input[type=number]{width:100%; font-family:inherit; font-size:13px; color:var(--ink); border:1px solid var(--rule); border-radius:5px; background:#fff; padding:6px 8px; resize:vertical; line-height:1.5;}
+  textarea:focus, select:focus{outline:none; border-color:var(--teal);}
+  .rate-row{display:flex; align-items:center; gap:10px; margin-top:8px;}
+  input[type=range]{ touch-action:pan-y; } /* 縦スクロール中に指が触れても値が動かないようにする */
+  .rate-row input[type=range]{flex:1; accent-color:var(--teal);}
+  .rate-num{font-size:14px; font-weight:700; color:var(--teal-deep); min-width:44px; text-align:right;}
+  .btn{font-family:inherit; font-size:12.5px; border:1px solid var(--teal); background:var(--paper-card); color:var(--teal-deep); border-radius:6px; padding:7px 12px; cursor:pointer; margin-top:8px; margin-right:6px;}
+  .btn:hover{background:var(--teal-soft);}
+  .btn.ghost{border-color:var(--rule); color:var(--ink-soft);}
+  .btn.ghost:hover{border-color:var(--sun); color:var(--sun);}
+  .scroll-hint{font-size:11px; color:var(--ink-soft); text-align:center; margin:0 0 6px;}
+  .table-wrap{overflow-x:auto; border:1px solid var(--rule); border-radius:8px; background:var(--paper-card); -webkit-overflow-scrolling:touch;}
+  table{border-collapse:collapse; width:100%; min-width:960px;}
+  th,td{border:1px solid var(--rule-soft); vertical-align:top;}
+  thead th{position:sticky; top:0; z-index:5; background:var(--teal-soft); padding:7px 4px; text-align:center; font-weight:700; font-size:13px; color:var(--teal-deep);}
+  thead th .date-sub{display:block; font-size:10px; font-weight:400; color:var(--ink-soft); margin-top:2px;}
+  thead th.sat{color:var(--sat);} thead th.sun{color:var(--sun);}
+  .corner{position:sticky; left:0; top:0; z-index:8; background:var(--teal-soft); min-width:80px; width:80px; max-width:80px;}
+  tbody th{position:sticky; left:0; z-index:3; background:var(--paper-deep); font-family:var(--font-display); font-weight:500; font-size:12px; color:var(--ink); text-align:left; padding:6px 5px; white-space:normal; word-break:break-word; min-width:80px; width:80px; max-width:80px;}
+  tbody th .row-label-sub{ font-size:9.5px; color:var(--ink-soft); font-weight:400; display:block; line-height:1.3; }
+  td{padding:5px; min-width:150px;}
+  tbody tr:nth-child(odd) td{background:rgba(255,255,255,.5);}
+  input[type=time], select.wx{width:100%; font-size:12px; border:1px solid var(--rule); border-radius:4px; padding:3px 2px; background:#fff; color:var(--ink);}
+  .slot-block{border:1px solid var(--rule-soft); border-radius:5px; padding:5px; background:#fff;}
+  .day-text-row{ width:100%; min-height:36px; font-size:11.5px; padding:4px 5px; resize:vertical; }  .slot-block textarea{width:100%; min-height:38px; font-size:11.5px; padding:4px 5px; margin-bottom:5px;}
+  .achieve-row{display:flex; align-items:center; gap:4px; font-size:10px; color:var(--ink-soft); margin-bottom:6px; padding-bottom:5px; border-bottom:1px dashed var(--rule-soft);}
+  .achieve-row label{display:flex; align-items:center; gap:4px; width:100%;}
+  .achieve-row select{width:56px; flex:none; font-size:11px; padding:2px; border:1px solid var(--rule); border-radius:3px;}
+  .emotion-title{font-size:10px; color:var(--ink-soft); margin-bottom:3px;}
+  .emotion-wrap{display:flex; flex-direction:column; gap:3px; margin-bottom:4px;}
+  .emotion-row{display:flex; gap:3px; align-items:center;}
+  .emotion-name{flex:1 1 70px; font-size:11px; padding:3px 4px; border:1px solid var(--rule); border-radius:3px; min-width:60px;}
+  .emotion-value{width:48px; flex:none; font-size:11px; padding:2px; border:1px solid var(--rule); border-radius:3px;}
+  .entry-del{border:none; background:none; color:var(--sun); font-size:13px; cursor:pointer; padding:0 2px; line-height:1; flex:none;}
+  .slot-add{width:100%; font-family:inherit; font-size:11px; border:1px dashed var(--teal); background:var(--teal-soft); color:var(--teal-deep); border-radius:4px; padding:3px 0; cursor:pointer;}
+  .slot-add:hover{background:var(--teal);color:#fff;}
+  .range-row{display:flex; align-items:center; gap:4px;}
+  .range-row input[type=range]{flex:1; accent-color:var(--teal);}
+  .range-num{font-size:11px; font-weight:700; color:var(--teal-deep); min-width:24px; text-align:right;}
+  .mood-row input[type=range]{accent-color:var(--sun);}
+  .graph-card{margin-top:14px;}
+  svg{display:block; width:100%; height:auto;}
+  .graph-note{font-size:11px; color:var(--ink-soft); margin-top:4px;}
+  footer.reset-row{text-align:center; margin-top:16px;}
+  .reset-btn{font-family:inherit; font-size:12px; color:var(--ink-soft); background:none; border:1px solid var(--rule); border-radius:6px; padding:6px 14px; cursor:pointer;}
+  .reset-btn:hover{border-color:var(--sun); color:var(--sun);}
+  .row-inline{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+  .row-inline > div{flex:1; min-width:140px;}
+  .toggle-row{display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin:18px 0 14px;}
+  .toggle-row .btn{margin:0;}
+
+  /* ===== PDF（印刷）用：表示制御のみ。体裁はJS内のPRINT_CSS_COREで一元管理 ===== */
+  #printArea{display:none;}
+  @media print{
+    @page{ size:A4 landscape; margin:8mm; }
+    body{ background:#fff !important; padding:0 !important; }
+    body > *:not(#printArea){ display:none !important; }
+    #printArea{ display:block !important; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-row">
+    <h1>こころノート</h1>
+  </div>
+  <div class="week-nav">
+    <button id="prevBtn">◀ 前の週</button>
+    <div class="week-range" id="weekRange">–</div>
+    <button id="nextBtn">次の週 ▶</button>
+    <button id="todayBtn">今週へ</button>
+    <button id="weekListBtn">週一覧</button>
+    <span class="save-status" id="saveStatus">読み込み中…</span>
+    <button id="retrySaveBtn" style="display:none; margin:0; font-family:inherit; font-size:12px; border:1px solid var(--sun); background:#fff; color:var(--sun); border-radius:6px; padding:4px 9px; cursor:pointer;" type="button">再試行</button>
+  </div>
+</header>
+
+<main>
+  <div id="storageBanner" style="display:none; background:#FFF7EC; border:1px solid var(--rule); border-left:4px solid var(--sun); border-radius:8px; padding:10px 12px; margin-bottom:14px; font-size:12.5px; line-height:1.7; color:var(--ink);"></div>
+
+  <div class="card">
+    <h2>今週の目標</h2>
+    <span class="field-label">今週の目標</span>
+    <textarea id="goalText" rows="2" placeholder="例：週3回は30分散歩する"></textarea>
+    <span class="field-label">目標達成のためにやること</span>
+    <textarea id="stepText" rows="2" placeholder="小さくてOK。今日から始められることを書いてみましょう"></textarea>
+    <div class="rate-row">
+      <span class="field-label" style="margin:0;">目標達成率</span>
+      <input type="range" id="rateRange" min="0" max="100" step="5">
+      <span class="rate-num" id="rateNum">0%</span>
+    </div>
+  </div>
+
+  <p class="scroll-hint">← 表は横にスクロールできます（曜日ごとに記録） →</p>
+
+  <div class="table-wrap">
+    <table id="weekTable">
+      <thead><tr id="headRow"><th class="corner"></th></tr></thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <div class="card graph-card">
+    <h2>きもちの波（週間グラフ）</h2>
+    <svg id="moodGraph" viewBox="0 0 700 180" preserveAspectRatio="none"></svg>
+    <p class="graph-note">上記の表の「気分」欄の数値（-5〜+5）から自動で描画されます。</p>
+  </div>
+
+  <div class="card">
+    <h2>今週の振り返り</h2>
+    <textarea id="reflectionText" rows="3" placeholder="小さなことでも大丈夫。今週の自分にひとこと。"></textarea>
+  </div>
+
+  <div class="toggle-row">
+    <button class="btn ghost" id="toggleAiBtn" type="button">AIにコメントをもらう ▾</button>
+    <button class="btn ghost" id="togglePdfBtn" type="button">PDF出力 ▾</button>
+    <button class="btn ghost" id="toggleBackupBtn" type="button">データのバックアップ ▾</button>
+  </div>
+
+  <div class="card" id="pdfSection" style="display:none;">
+    <h2>PDF出力（A4横）</h2>
+    <p class="graph-note" style="margin:0 0 6px;">表示中の週を含む指定期間の記録を、紙の記録表に近いA4横レイアウトで出力します。1週間が1ページになります。</p>
+    <span class="field-label">対象期間（表示中の週からさかのぼって）</span>
+    <select id="pdfWeeks">
+      <option value="1" selected>この週のみ（1ページ）</option>
+      <option value="2">2週分（2ページ）</option>
+      <option value="4">4週分（4ページ）</option>
+      <option value="8">8週分（8ページ）</option>
+    </select>
+    <button class="btn" id="pdfBtn">印刷画面を開く（PDF保存）</button>
+    <button class="btn" id="pdfFileBtn">印刷用ファイルを書き出す</button>
+    <p class="graph-note" style="margin:6px 0 0;">「印刷画面を開く」が反応しない環境（Claudeアプリ内のプレビューなど）では、「印刷用ファイルを書き出す」を使ってください。書き出したHTMLファイルをSafariやChromeで開くと自動で印刷画面が開き、「PDFとして保存」を選べます。<br>※印刷プレビューが縦向きになっている場合は、印刷設定の「レイアウト／用紙の向き」で「横」を選んでください。</p>
+  </div>
+
+  <div class="card" id="aiSection" style="display:none;">
+    <h2>AIにコメントをもらう</h2>
+    <span class="field-label">コメント用プロンプト（編集できます）</span>
+    <textarea id="aiPromptText" rows="5"></textarea>
+    <button class="btn ghost" id="resetPromptBtn" type="button">初期プロンプトに戻す</button>
+    <div class="row-inline">
+      <div>
+        <span class="field-label">対象期間</span>
+        <select id="promptDays">
+          <option value="3">直近3日</option>
+          <option value="7" selected>直近7日（1週間）</option>
+          <option value="14">直近14日（2週間）</option>
+          <option value="30">直近30日（1か月）</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn" id="genPromptBtn">プロンプトを生成する</button>
+    <span class="field-label">生成結果（コピーしてAIに貼り付けてください）</span>
+    <textarea id="promptOutput" rows="10" readonly placeholder="「プロンプトを生成する」を押すとここに表示されます"></textarea>
+    <button class="btn" id="copyPromptBtn">結果をコピー</button>
+  </div>
+
+  <div class="card" id="backupSection" style="display:none; border-left-color:var(--sat);">
+    <h2>データのバックアップ（全期間・どの週からでも操作できます）</h2>
+    <p class="graph-note" style="margin:0 0 6px;">表示中の週に関わらず、これまで保存したすべての週の記録が対象です。機種変更やアプリの更新のときは、ここで書き出したファイルを新しい環境で読み込めば記録を引き継げます。</p>
+    <button class="btn" id="exportBtn">全期間のデータを書き出す（ダウンロード）</button>
+    <span class="field-label">書き出し内容（コピーして保存する場合用）</span>
+    <textarea id="backupText" rows="5" readonly placeholder="「書き出す」を押すとここに内容が表示されます。ダウンロードできない環境では、この内容をコピーしてメモアプリなどに保存してください。"></textarea>
+    <button class="btn" id="copyBackupBtn">内容を全てコピー</button>
+    <div style="border-top:1px dashed var(--rule); margin:12px 0 8px;"></div>
+    <span class="field-label">記録の復元（バックアップファイルの読み込み）</span>
+    <input type="file" id="importFile" accept=".json,.txt,application/json,text/plain" style="display:none;">
+    <button class="btn" id="importBtn">ファイルを選んで読み込む</button>
+  </div>
+
+  <footer class="reset-row">
+    <button class="reset-btn" id="resetBtn">この週の記録を消去する</button>
+    <p style="font-size:10px; color:var(--ink-soft); margin:14px 0 0;">こころノート v1.4　© ウミ</p>
+    <p style="font-size:9.5px; color:var(--ink-soft); margin:4px 0 0;">本アプリはご購入者ご本人とご家族の範囲でご利用ください。再配布・転売・公開はご遠慮ください。</p>
+  </footer>
+</main>
+
+<div id="printArea"></div>
+
+<div id="weekListOverlay" style="display:none; position:fixed; inset:0; background:rgba(43,42,36,.5); z-index:100; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:var(--paper-card); border:1px solid var(--rule); border-left:4px solid var(--teal); border-radius:10px; max-width:420px; width:100%; max-height:70vh; display:flex; flex-direction:column; box-shadow:0 8px 30px rgba(0,0,0,.25);">
+    <p style="font-size:14px; font-weight:700; color:var(--teal-deep); margin:14px 16px 8px;">記録のある週から選ぶ</p>
+    <div id="weekListBody" style="overflow-y:auto; padding:0 12px 12px;"></div>
+    <div style="padding:0 16px 14px; text-align:right;">
+      <button id="weekListClose" type="button" style="font-family:inherit; font-size:13px; border:1px solid var(--rule); background:#fff; color:var(--ink-soft); border-radius:6px; padding:7px 16px; cursor:pointer;">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<div id="emotionPickOverlay" style="display:none; position:fixed; inset:0; background:rgba(43,42,36,.5); z-index:100; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:var(--paper-card); border:1px solid var(--rule); border-left:4px solid var(--teal); border-radius:10px; max-width:420px; width:100%; max-height:70vh; display:flex; flex-direction:column; box-shadow:0 8px 30px rgba(0,0,0,.25);">
+    <p style="font-size:14px; font-weight:700; color:var(--teal-deep); margin:14px 16px 8px;">感情を選ぶ</p>
+    <div id="emotionChips" style="overflow-y:auto; padding:0 16px 8px; display:flex; flex-wrap:wrap; gap:8px;"></div>
+    <div id="emotionEditArea" style="display:none; padding:0 16px 8px;">
+      <p style="font-size:11px; color:var(--ink-soft); margin:4px 0;">1行に1つずつ、よく使う感情を書いてください。</p>
+      <textarea id="emotionEditText" rows="6" style="width:100%; font-family:inherit; font-size:13px; border:1px solid var(--rule); border-radius:5px; padding:6px 8px;"></textarea>
+    </div>
+    <div style="padding:8px 16px 14px; display:flex; justify-content:space-between; gap:8px;">
+      <button id="emotionEditBtn" type="button" style="font-family:inherit; font-size:12px; border:1px solid var(--rule); background:#fff; color:var(--ink-soft); border-radius:6px; padding:7px 12px; cursor:pointer;">リストを編集</button>
+      <button id="emotionPickClose" type="button" style="font-family:inherit; font-size:13px; border:1px solid var(--rule); background:#fff; color:var(--ink-soft); border-radius:6px; padding:7px 16px; cursor:pointer;">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalOverlay" style="display:none; position:fixed; inset:0; background:rgba(43,42,36,.5); z-index:100; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:var(--paper-card); border:1px solid var(--rule); border-left:4px solid var(--teal); border-radius:10px; max-width:420px; width:100%; padding:16px; box-shadow:0 8px 30px rgba(0,0,0,.25);">
+    <p id="modalMsg" style="white-space:pre-wrap; font-size:13.5px; line-height:1.6; margin:0 0 14px; color:var(--ink);"></p>
+    <div style="display:flex; gap:8px; justify-content:flex-end;">
+      <button id="modalCancel" type="button" style="font-family:inherit; font-size:13px; border:1px solid var(--rule); background:#fff; color:var(--ink-soft); border-radius:6px; padding:7px 16px; cursor:pointer;">キャンセル</button>
+      <button id="modalOk" type="button" style="font-family:inherit; font-size:13px; border:1px solid var(--teal); background:var(--teal); color:#fff; border-radius:6px; padding:7px 16px; cursor:pointer;">OK</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DEFAULT_AI_PROMPT = `【重要】これまでの会話やあなたが保持している記憶・メモリに関する情報は一切参照しないでください。私についての既存の印象や口調の癖、話し方の好みがあってもすべて無視し、以下に書かれた役割・トーン・出力形式にのみ厳密に従って回答してください。
+
+あなたは「こころの記録の分析パートナー」として、これから渡す一週間分の記録を一緒に振り返る役割です。
+
+役割
+・記録を読み、本人がまだ気づいていないかもしれない傾向やつながりを、事実ベースで見つけて伝えます。
+・行動活性化の考え方を土台にします。つまり「どんな行動をした日に気分や達成度が上向いたか」に特に注目します。
+・評価や説教をする立場ではなく、本人の努力をねぎらい、自己理解を深める手伝いをする立場です。
+
+分析の観点（記録から読み取れる範囲で）
+・気分の波：気分が良かった日／沈んだ日に、それぞれ何をしていたか
+・行動と気分のつながり：達成度や感情の強さが高かった活動の共通点
+・生活リズム：起床・就寝時間の安定度と、気分・疲労度との関係
+・体のサイン：食欲や疲労度の変化と、その前後の出来事
+・天気など外部要因と気分の関係
+・今週の目標と実際の行動のつながり
+
+伝え方のルール
+・文体は必ず「ですます調」で統一する（「〜だ」「〜である」調は使わない）。
+・必ず記録に書かれている事実を根拠にする。記録にないことを推測で断定しない。
+・「〜のようです」「〜かもしれません」と控えめに述べ、本人に「どう感じますか?」と確認を挟む。
+・数値の小さな上下（1〜2程度の差）を過度に意味づけしない。
+・気分が沈んだ日を責めない。沈んだ日があるのは自然なこととして扱う。
+・うまくいった日・うまくいった行動を必ず1つ以上見つけて言葉にする。
+・医療的・心理的な診断はしない。つらさが強そうな記録が続く場合は、専門家への相談をそっと勧める。
+
+出力の構成
+1. 全体の印象（2〜3行。まずねぎらいから）
+2. 気づいた傾向（2〜4個。それぞれ根拠となる記録を添えて）
+3. 今週うまくいっていたこと（1〜2個）
+4. 来週試せそうな小さな提案（1個だけ。ハードルの低いもの）
+5. 締めのねぎらい
+
+注意
+・提案は「〜すべき」ではなく「〜してみるのはどうでしょう」の形にする。
+・記録が少ない週でも、記録をつけたこと自体をまずねぎらう。
+・本人から質問があれば、記録を根拠に一緒に考える。`;
+
+const WEEKDAYS = ['月','火','水','木','金','土','日'];
+const ROWS = [
+  {key:'weather', label:'天気'},
+  {key:'wake', label:'起床時間'},
+  {key:'sleep', label:'就寝時間'},
+  {key:'appetite', label:'食欲'},
+  {key:'dailyGoal', label:'今日の目標', textRow:true},
+  {key:'morning', label:'午前', slot:true},
+  {key:'afternoon', label:'午後', slot:true},
+  {key:'evening', label:'夕方〜', slot:true},
+  {key:'fatigue', label:'疲労度'},
+  {key:'mood', label:'気分'},
+  {key:'dailyPraise', label:'振り返り\n（自分を褒める）', textRow:true}
+];
+const WEATHER_OPTS = ['','☀晴れ','🌤晴時々曇','☁くもり','🌧雨','❄雪','⛈雷'];
+const APPETITE_OPTS = ['','○','△','×'];
+const SCORE_OPTS = ['','1','2','3','4','5','6','7','8','9','10'];
+
+let state = null;
+let weekStart = getMonday(new Date());
+let saveTimer = null;
+let weekCache = {};
+
+// ===== 自前の確認ダイアログ（環境によって alert/confirm が表示されないため） =====
+function showModal(msg, withCancel){
+  return new Promise(res=>{
+    const ov = document.getElementById('modalOverlay');
+    document.getElementById('modalMsg').textContent = msg;
+    document.getElementById('modalCancel').style.display = withCancel ? 'inline-block' : 'none';
+    ov.style.display = 'flex';
+    const done = v => { ov.style.display = 'none'; res(v); };
+    document.getElementById('modalOk').onclick = ()=> done(true);
+    document.getElementById('modalCancel').onclick = ()=> done(false);
+  });
+}
+const appAlert = m => showModal(m, false);
+const appConfirm = m => showModal(m, true);
+
+// ===== スライダーの誤タップ防止 =====
+// トラックを軽くタップしただけでは値を確定させず、横方向に一定以上ドラッグしたときだけ確定する。
+// タップで値が飛んでしまった場合は元の値に自動で戻す。キーボード操作やPCのクリック&ドラッグは従来どおり。
+function attachSliderGuard(rng, onPreview, onCommit, onRevert){
+  let startVal = null, startX = 0, dragged = false;
+  const DRAG_THRESHOLD = 10; // px：これ以上横に動かしたら「意図的な操作」とみなす
+  rng.addEventListener('pointerdown', (e)=>{
+    startVal = rng.value; startX = e.clientX; dragged = false;
+  });
+  rng.addEventListener('pointermove', (e)=>{
+    if(startVal !== null && Math.abs(e.clientX - startX) >= DRAG_THRESHOLD) dragged = true;
+  });
+  rng.addEventListener('input', ()=>{ onPreview(rng.value); });
+  const finish = ()=>{
+    if(startVal === null) return;
+    if(!dragged && rng.value !== startVal){
+      rng.value = startVal;   // 誤タップ：元に戻す
+      (onRevert || onPreview)(startVal);
+    } else if(rng.value !== startVal){
+      onCommit(rng.value);    // 意図的なドラッグ：確定
+    }
+    startVal = null;
+  };
+  rng.addEventListener('pointerup', finish);
+  rng.addEventListener('pointercancel', finish);
+  // キーボード（矢印キー）などポインタ以外の操作はそのまま確定
+  rng.addEventListener('change', ()=>{ if(startVal === null){ onPreview(rng.value); onCommit(rng.value); } });
+}
+
+// ===== よく使う感情（プリセット） =====
+const EMOTION_DEFAULTS = ['安心','不安','うれしい','達成感','イライラ','落ち込み','疲れ','平穏'];
+let emotionPresets = EMOTION_DEFAULTS.slice();
+async function loadEmotionPresets(){
+  try{
+    const v = await stGet('settings:emotions');
+    if(v){
+      const arr = JSON.parse(v);
+      if(Array.isArray(arr)) emotionPresets = arr.filter(s => typeof s === 'string' && s.trim()).map(s => s.trim());
+    }
+  }catch(e){}
+}
+function saveEmotionPresets(){
+  stSet('settings:emotions', JSON.stringify(emotionPresets)).catch(()=>{});
+}
+let emotionPickCallback = null;
+function renderEmotionChips(){
+  const box = document.getElementById('emotionChips');
+  box.innerHTML = '';
+  if(emotionPresets.length === 0){
+    box.innerHTML = '<p style="font-size:12px; color:var(--ink-soft);">「リストを編集」からよく使う感情を登録できます。</p>';
+    return;
+  }
+  emotionPresets.forEach(name=>{
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.textContent = name;
+    chip.style.cssText = 'font-family:inherit; font-size:13px; border:1px solid var(--teal); background:var(--teal-soft); color:var(--teal-deep); border-radius:14px; padding:6px 14px; cursor:pointer;';
+    chip.onclick = ()=>{
+      if(emotionPickCallback) emotionPickCallback(name);
+      closeEmotionPicker();
+    };
+    box.appendChild(chip);
+  });
+}
+function openEmotionPicker(callback){
+  emotionPickCallback = callback;
+  document.getElementById('emotionEditArea').style.display = 'none';
+  document.getElementById('emotionEditBtn').textContent = 'リストを編集';
+  renderEmotionChips();
+  document.getElementById('emotionPickOverlay').style.display = 'flex';
+}
+function closeEmotionPicker(){
+  // 編集中なら保存してから閉じる
+  if(document.getElementById('emotionEditArea').style.display !== 'none') applyEmotionEdit();
+  document.getElementById('emotionPickOverlay').style.display = 'none';
+  emotionPickCallback = null;
+}
+function applyEmotionEdit(){
+  const lines = document.getElementById('emotionEditText').value
+    .split('\n').map(s => s.trim()).filter(Boolean);
+  emotionPresets = lines;
+  saveEmotionPresets();
+}
+
+
+// ===== 保存アダプタ =====
+// window.storage（アプリ保存）と localStorage（端末内保存）の両方に書き込み、
+// 読み込みはアプリ保存→端末内保存の順で試す。どちらか一方でも生きていればデータが残る。
+const LS_PREFIX = 'seikatsu:';
+let storageQueue = Promise.resolve();
+
+function hasAppStorage(){ return typeof window.storage !== 'undefined' && window.storage && typeof window.storage.set === 'function'; }
+function lsGet(key){ try{ return localStorage.getItem(LS_PREFIX + key); }catch(e){ return null; } }
+function lsSet(key, value){ try{ localStorage.setItem(LS_PREFIX + key, value); return true; }catch(e){ return false; } }
+function lsDelete(key){ try{ localStorage.removeItem(LS_PREFIX + key); }catch(e){} }
+function lsList(prefix){
+  const keys = [];
+  try{
+    for(let i=0;i<localStorage.length;i++){
+      const k = localStorage.key(i);
+      if(k && k.startsWith(LS_PREFIX + prefix)) keys.push(k.slice(LS_PREFIX.length));
+    }
+  }catch(e){}
+  return keys;
+}
+
+async function stSet(key, value){
+  // 端末内保存は必ず先に行う（即時・確実）
+  const localOk = lsSet(key, value);
+  // アプリ保存はキュー経由で直列に試す
+  let appOk = false;
+  if(hasAppStorage()){
+    const run = ()=> window.storage.set(key, value, false);
+    const p = storageQueue.then(run, run);
+    storageQueue = p.catch(()=>{});
+    try{ await p; appOk = true; }catch(e){}
+  }
+  if(!localOk && !appOk) throw new Error('save failed');
+  return {localOk, appOk};
+}
+async function stGet(key){
+  if(hasAppStorage()){
+    try{
+      const r = await window.storage.get(key, false);
+      if(r && r.value !== undefined && r.value !== null) return r.value;
+    }catch(e){}
+  }
+  return lsGet(key);
+}
+async function stDelete(key){
+  lsDelete(key);
+  if(hasAppStorage()){
+    try{ await window.storage.delete(key, false); }catch(e){}
+  }
+}
+async function stList(prefix){
+  const set = new Set(lsList(prefix));
+  if(hasAppStorage()){
+    try{
+      const r = await window.storage.list(prefix, false);
+      ((r && r.keys) || []).forEach(k=> set.add(k));
+    }catch(e){}
+  }
+  return Array.from(set);
+}
+
+function getMonday(d){
+  const date = new Date(d);
+  const day = date.getDay();
+  const diff = (day === 0 ? -6 : 1 - day);
+  date.setDate(date.getDate() + diff);
+  date.setHours(0,0,0,0);
+  return date;
+}
+function toISO(d){
+  // タイムゾーンに関係なくローカルの日付を返す（toISOString はUTC基準で日付がズレるため使わない）
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  return y + '-' + m + '-' + dd;
+}
+function parseISODate(s){
+  // 'YYYY-MM-DD' をローカル日付として解釈する（new Date(s) はUTC解釈でズレるため使わない）
+  const p = s.split('-').map(Number);
+  return new Date(p[0], p[1]-1, p[2]);
+}
+function fmtShort(d){ return (d.getMonth()+1)+'/'+d.getDate(); }
+function addDays(d, n){ const nd = new Date(d); nd.setDate(nd.getDate()+n); return nd; }
+
+function blankEmotion(){ return {name:'', value:''}; }
+function blankSlot(){ return {text:'', achieve:'', emotions:[blankEmotion()]}; }
+function blankDay(d, wd){
+  return { date: toISO(d), weekday: wd, weather:'', wake:'', sleep:'', appetite:'', dailyGoal:'',
+    morning:blankSlot(), afternoon:blankSlot(), evening:blankSlot(),
+    fatigue:'', mood:'', dailyPraise:'' };
+}
+function blankWeek(startDate){
+  const days = [];
+  for(let i=0;i<7;i++) days.push(blankDay(addDays(startDate,i), WEEKDAYS[i]));
+  return { goal:'', step:'', rate:0, reflection:'', days };
+}
+
+function migrateDay(day){
+  if(day.appetite === undefined) day.appetite = '';
+  if(day.dailyGoal === undefined) day.dailyGoal = '';
+  if(day.dailyPraise === undefined) day.dailyPraise = '';
+  ['morning','afternoon','evening'].forEach(k=>{
+    const v = day[k];
+    if(Array.isArray(v)){
+      // 旧バージョン（項目を複数追加できた形式）からの変換
+      const text = v.map(e=>e.text).filter(Boolean).join(' / ');
+      const achieveEntry = v.find(e=>e.achieve);
+      const achieve = achieveEntry ? String(achieveEntry.achieve) : '';
+      const emotions = v.filter(e=>e.feeling).map(e=>({name:'', value:String(e.feeling)}));
+      day[k] = { text, achieve, emotions: emotions.length ? emotions : [blankEmotion()] };
+    } else if(v && typeof v === 'object'){
+      if(!Array.isArray(v.emotions)){
+        const legacyValue = v.feeling || v.satisfy;
+        day[k] = { text: v.text || '', achieve: String(v.achieve || ''),
+          emotions: legacyValue ? [{name:'', value:String(legacyValue)}] : [blankEmotion()] };
+      } else if(v.emotions.length === 0){
+        v.emotions = [blankEmotion()];
+      }
+    } else {
+      day[k] = blankSlot();
+    }
+  });
+  return day;
+}
+function migrateWeek(wk){
+  if(!wk.days) wk.days = [];
+  wk.days = wk.days.map(migrateDay);
+  return wk;
+}
+
+async function loadAiPrompt(){
+  document.getElementById('aiPromptText').value = DEFAULT_AI_PROMPT;
+  try{
+    const v = await stGet('settings:aiPrompt');
+    if(v) document.getElementById('aiPromptText').value = v;
+  }catch(e){}
+}
+let aiPromptTimer=null;
+function saveAiPrompt(){
+  clearTimeout(aiPromptTimer);
+  aiPromptTimer = setTimeout(()=>{
+    stSet('settings:aiPrompt', document.getElementById('aiPromptText').value).catch(()=>{});
+  }, 500);
+}
+
+async function loadWeek(){
+  setSaveStatus('読み込み中…');
+  const key = 'week:' + toISO(weekStart);
+  try{
+    let v = await stGet(key);
+    if(!v){
+      // 旧バージョンでは日付キーがタイムゾーンの影響で1日ズレて保存されていたことがある。
+      // 前後1日のキーを探し、見つかれば正しいキーに移し替える。
+      for(const offset of [-1, 1]){
+        const legacyKey = 'week:' + toISO(addDays(weekStart, offset));
+        const lv = await stGet(legacyKey);
+        if(lv){
+          v = lv;
+          // 新キーへの保存が成功したことを確認してから旧キーを削除する（データ消失防止）
+          try{
+            await stSet(key, lv);
+            await stDelete(legacyKey);
+          }catch(e){ /* 保存に失敗した場合は旧キーを残す */ }
+          break;
+        }
+      }
+    }
+    state = v ? migrateWeek(JSON.parse(v)) : blankWeek(weekStart);
+  }catch(e){ state = blankWeek(weekStart); }
+  // 7日分に満たないデータは空の日で補完する
+  while(state.days.length < 7){
+    state.days.push(blankDay(addDays(weekStart, state.days.length), WEEKDAYS[state.days.length]));
+  }
+  if(state.days.length > 7) state.days = state.days.slice(0, 7);
+  // 日付・曜日をこの週の正しい値に揃える（ズレたデータを取り込んだ場合の補正）
+  state.days.forEach((day, i)=>{
+    day.date = toISO(addDays(weekStart, i));
+    day.weekday = WEEKDAYS[i];
+  });
+  weekCache[toISO(weekStart)] = state;
+  renderAll();
+  setSaveStatus('保存済み');
+}
+function saveWeekNow(){
+  const key = 'week:' + toISO(weekStart);
+  weekCache[toISO(weekStart)] = state;
+  attemptSave(key, JSON.stringify(state), 0);
+}
+function attemptSave(key, payload, attempt){
+  setSaveStatus(attempt === 0 ? '保存中…' : ('再試行中…(' + (attempt+1) + '回目)'));
+  const retryBtn = document.getElementById('retrySaveBtn');
+  if(retryBtn) retryBtn.style.display = 'none';
+  stSet(key, payload)
+    .then((res)=>{
+      if(res.appOk) setSaveStatus('保存済み');
+      else setSaveStatus('端末内に保存済み');
+    })
+    .catch(()=>{
+      const delays = [1500, 3000, 6000];
+      if(attempt < delays.length){
+        setTimeout(()=> attemptSave(key, payload, attempt+1), delays[attempt]);
+      } else {
+        setSaveStatus('保存に失敗しました（入力内容はこの画面上には残っています）');
+        if(retryBtn){
+          retryBtn.style.display = 'inline-block';
+          retryBtn.onclick = ()=> attemptSave(key, payload, 0);
+        }
+      }
+    });
+}
+window.addEventListener('online', ()=>{ if(state) saveWeekNow(); });
+function scheduleSave(){
+  setSaveStatus('編集中…');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveWeekNow, 600);
+}
+function setSaveStatus(txt){ document.getElementById('saveStatus').textContent = txt; }
+
+function renderAll(){
+  renderWeekRange();
+  renderTable();
+  document.getElementById('goalText').value = state.goal || '';
+  document.getElementById('stepText').value = state.step || '';
+  document.getElementById('rateRange').value = state.rate || 0;
+  document.getElementById('rateNum').textContent = (state.rate||0) + '%';
+  document.getElementById('reflectionText').value = state.reflection || '';
+  drawGraph();
+}
+function renderWeekRange(){
+  const end = addDays(weekStart, 6);
+  const startStr = weekStart.getFullYear() + '/' + fmtShort(weekStart);
+  const endStr = (end.getFullYear() !== weekStart.getFullYear() ? end.getFullYear() + '/' : '') + fmtShort(end);
+  document.getElementById('weekRange').textContent = startStr + ' 〜 ' + endStr;
+}
+
+function renderTable(){
+  const headRow = document.getElementById('headRow');
+  headRow.innerHTML = '<th class="corner"></th>';
+  state.days.forEach((day, i)=>{
+    const d = parseISODate(day.date);
+    const th = document.createElement('th');
+    if(i===5) th.classList.add('sat');
+    if(i===6) th.classList.add('sun');
+    th.innerHTML = day.weekday + '<span class="date-sub">' + fmtShort(d) + '</span>';
+    headRow.appendChild(th);
+  });
+  const body = document.getElementById('tableBody');
+  body.innerHTML = '';
+  ROWS.forEach(row=>{
+    const tr = document.createElement('tr');
+    const th = document.createElement('th');
+    const labelParts = row.label.split('\n');
+    th.innerHTML = esc(labelParts[0]) + labelParts.slice(1).map(p => '<span class="row-label-sub">' + esc(p) + '</span>').join('');
+    tr.appendChild(th);
+    state.days.forEach((day)=>{
+      const td = document.createElement('td');
+      td.appendChild(buildCell(row, day));
+      tr.appendChild(td);
+    });
+    body.appendChild(tr);
+  });
+}
+
+function makeSelect(options, value, onChange, labelMap){
+  const sel = document.createElement('select');
+  sel.className = 'wx';
+  options.forEach(opt=>{
+    const o = document.createElement('option');
+    o.value = opt;
+    o.textContent = opt === '' ? '－' : (labelMap ? labelMap(opt) : opt);
+    if(String(opt) === String(value)) o.selected = true;
+    sel.appendChild(o);
+  });
+  sel.onchange = ()=> onChange(sel.value);
+  return sel;
+}
+
+function buildCell(row, day){
+  const wrap = document.createElement('div');
+  if(row.textRow){
+    const ta = document.createElement('textarea');
+    ta.className = 'day-text-row';
+    ta.placeholder = row.key === 'dailyGoal' ? '今日の目標' : '今日できたこと・良かった点';
+    ta.value = day[row.key] || '';
+    ta.oninput = ()=>{ day[row.key] = ta.value; scheduleSave(); };
+    wrap.appendChild(ta);
+  } else if(row.key === 'weather'){
+    wrap.appendChild(makeSelect(WEATHER_OPTS, day.weather, v=>{ day.weather=v; scheduleSave(); }));
+  } else if(row.key === 'appetite'){
+    wrap.appendChild(makeSelect(APPETITE_OPTS, day.appetite, v=>{ day.appetite=v; scheduleSave(); }));
+  } else if(row.key === 'wake' || row.key === 'sleep'){
+    const inp = document.createElement('input');
+    inp.type = 'time'; inp.value = day[row.key] || '';
+    inp.oninput = ()=>{ day[row.key] = inp.value; scheduleSave(); };
+    wrap.appendChild(inp);
+  } else if(row.slot){
+    const slot = day[row.key];
+    const box = document.createElement('div');
+    box.className = 'slot-block';
+    const ta = document.createElement('textarea');
+    ta.placeholder = '活動内容';
+    ta.value = slot.text || '';
+    ta.oninput = ()=>{ slot.text = ta.value; scheduleSave(); };
+    box.appendChild(ta);
+
+    const achRow = document.createElement('div');
+    achRow.className = 'achieve-row';
+    const achLabel = document.createElement('label');
+    achLabel.textContent = '達成度';
+    const achSel = makeSelect(SCORE_OPTS, slot.achieve, v=>{ slot.achieve=v; scheduleSave(); });
+    achSel.style.width = '64px';
+    achSel.style.flexShrink = '0';
+    achSel.style.flexGrow = '0';
+    achLabel.appendChild(achSel);
+    achRow.appendChild(achLabel);
+    box.appendChild(achRow);
+
+    const emoTitle = document.createElement('div');
+    emoTitle.className = 'emotion-title'; emoTitle.textContent = '感情';
+    box.appendChild(emoTitle);
+
+    const emoWrap = document.createElement('div');
+    emoWrap.className = 'emotion-wrap';
+    slot.emotions.forEach((emo, idx)=>{
+      const erow = document.createElement('div');
+      erow.className = 'emotion-row';
+      const nameInp = document.createElement('input');
+      nameInp.type = 'text'; nameInp.className = 'emotion-name';
+      nameInp.placeholder = '感情名（例：不安）';
+      nameInp.value = emo.name || '';
+      nameInp.oninput = ()=>{ emo.name = nameInp.value; scheduleSave(); };
+      erow.appendChild(nameInp);
+      const pickBtn = document.createElement('button');
+      pickBtn.type = 'button';
+      pickBtn.textContent = '▾';
+      pickBtn.title = 'よく使う感情から選ぶ';
+      pickBtn.style.cssText = 'flex:none; font-family:inherit; font-size:11px; border:1px solid var(--teal); background:var(--teal-soft); color:var(--teal-deep); border-radius:3px; padding:3px 6px; cursor:pointer;';
+      pickBtn.onclick = ()=> openEmotionPicker((name)=>{
+        emo.name = name;
+        nameInp.value = name;
+        scheduleSave();
+      });
+      erow.appendChild(pickBtn);
+      const sel = makeSelect(SCORE_OPTS, emo.value, v=>{ emo.value=v; scheduleSave(); });
+      sel.classList.add('emotion-value');
+      sel.style.width = '54px';
+      sel.style.flexShrink = '0';
+      sel.style.flexGrow = '0';
+      erow.appendChild(sel);
+      if(slot.emotions.length > 1){
+        const del = document.createElement('button');
+        del.type = 'button'; del.className = 'entry-del'; del.textContent = '×';
+        del.title = 'この感情を削除';
+        del.onclick = ()=>{ slot.emotions.splice(idx,1); scheduleSave(); renderTable(); };
+        erow.appendChild(del);
+      }
+      emoWrap.appendChild(erow);
+    });
+    box.appendChild(emoWrap);
+
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button'; addBtn.className = 'slot-add'; addBtn.textContent = '＋ 感情を追加';
+    addBtn.onclick = ()=>{ slot.emotions.push(blankEmotion()); scheduleSave(); renderTable(); };
+    box.appendChild(addBtn);
+
+    wrap.appendChild(box);
+  } else if(row.key === 'fatigue'){
+    wrap.className = 'range-row';
+    const rng = document.createElement('input');
+    rng.type = 'range'; rng.min = 1; rng.max = 10; rng.value = day.fatigue || 1;
+    const num = document.createElement('span'); num.className='range-num'; num.textContent = day.fatigue || '－';
+    attachSliderGuard(rng,
+      (v)=>{ num.textContent = v; },                                   // ドラッグ中のプレビュー
+      (v)=>{ day.fatigue = v; num.textContent = v; scheduleSave(); },  // 確定
+      ()=>{ num.textContent = day.fatigue || '－'; }                   // 誤タップ時は元の表示に戻す
+    );
+    wrap.appendChild(rng); wrap.appendChild(num);
+  } else if(row.key === 'mood'){
+    wrap.className = 'range-row mood-row';
+    const rng = document.createElement('input');
+    rng.type = 'range'; rng.min = -5; rng.max = 5; rng.value = day.mood === '' ? 0 : day.mood;
+    const num = document.createElement('span'); num.className='range-num';
+    const moodText = v => Number(v) > 0 ? '+' + v : String(v);
+    num.textContent = day.mood === '' ? '－' : moodText(day.mood);
+    attachSliderGuard(rng,
+      (v)=>{ num.textContent = moodText(v); },
+      (v)=>{ day.mood = v; num.textContent = moodText(v); scheduleSave(); drawGraph(); },
+      ()=>{ num.textContent = day.mood === '' ? '－' : moodText(day.mood); }
+    );
+    wrap.appendChild(rng); wrap.appendChild(num);
+  }
+  return wrap;
+}
+
+function drawGraph(){
+  const svg = document.getElementById('moodGraph');
+  const W = 700, H = 180, padX = 34, padY = 16;
+  const plotW = W - padX*2, plotH = H - padY*2;
+  const vals = state.days.map(d => d.mood === '' || d.mood === undefined ? null : Number(d.mood));
+  const yFor = v => padY + plotH - ((v + 5) / 10) * plotH;
+  const xFor = i => padX + (plotW / 6) * i;
+  let s = '';
+  s += `<line x1="${padX}" y1="${yFor(0)}" x2="${W-padX}" y2="${yFor(0)}" stroke="#B8AE8C" stroke-width="1" stroke-dasharray="4 4"/>`;
+  s += `<text x="${padX-6}" y="${padY+4}" font-size="10" fill="#7A7360" text-anchor="end">＋</text>`;
+  s += `<text x="${padX-6}" y="${H-padY}" font-size="10" fill="#7A7360" text-anchor="end">－</text>`;
+  WEEKDAYS.forEach((wd,i)=>{ s += `<text x="${xFor(i)}" y="${H-2}" font-size="10" fill="#7A7360" text-anchor="middle">${wd}</text>`; });
+  const pts = vals.map((v,i)=> v===null ? null : [xFor(i), yFor(v)]);
+  const known = pts.filter(p=>p);
+  if(known.length > 0){
+    let d = ''; let prev = null;
+    pts.forEach((p)=>{
+      if(!p){ prev = null; return; }
+      if(!prev){ d += `M ${p[0]} ${p[1]} `; }
+      else { const midX=(prev[0]+p[0])/2; d += `C ${midX} ${prev[1]}, ${midX} ${p[1]}, ${p[0]} ${p[1]} `; }
+      prev = p;
+    });
+    s += `<path d="${d}" fill="none" stroke="#4B4E8C" stroke-width="2.5" stroke-linecap="round"/>`;
+    pts.forEach(p=>{ if(p) s += `<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="#4B4E8C"/>`; });
+  } else {
+    s += `<text x="${W/2}" y="${H/2}" font-size="12" fill="#B8AE8C" text-anchor="middle">気分を入力するとグラフが表示されます</text>`;
+  }
+  svg.innerHTML = s;
+}
+
+// ---- AI prompt generation ----
+async function getWeekForDate(d){
+  const wkStart = getMonday(d);
+  const key = toISO(wkStart);
+  if(weekCache[key] !== undefined) return {wk: weekCache[key], wkStart};
+  let wk = null;
+  try{
+    let v = await stGet('week:'+key);
+    if(!v){
+      for(const offset of [-1, 1]){
+        const lv = await stGet('week:'+toISO(addDays(wkStart, offset)));
+        if(lv){ v = lv; break; }
+      }
+    }
+    wk = v ? migrateWeek(JSON.parse(v)) : null;
+  }catch(e){ wk = null; }
+  weekCache[key] = wk;
+  return {wk, wkStart};
+}
+
+function formatDayText(day){
+  const lines = [];
+  lines.push('◆' + day.date + '（' + day.weekday + '）');
+  if(day.weather) lines.push('天気: ' + day.weather);
+  if(day.wake || day.sleep) lines.push('起床/就寝: ' + (day.wake||'-') + ' / ' + (day.sleep||'-'));
+  if(day.appetite) lines.push('食欲: ' + day.appetite);
+  if(day.dailyGoal) lines.push('今日の目標: ' + day.dailyGoal);
+  const slotLabels = {morning:'午前', afternoon:'午後', evening:'夕方〜'};
+  ['morning','afternoon','evening'].forEach(k=>{
+    const slot = day[k];
+    if(!slot) return;
+    const emotions = (slot.emotions||[]).filter(e=>e.name || e.value);
+    if(!slot.text && !slot.achieve && emotions.length === 0) return;
+    let line = slotLabels[k] + ': ' + (slot.text || '(内容未記入)');
+    if(slot.achieve) line += '（達成度' + slot.achieve + '/10）';
+    lines.push(line);
+    emotions.forEach(e=>{
+      lines.push('　- 感情: ' + (e.name || '(名称未記入)') + (e.value ? '（' + e.value + '/10）' : ''));
+    });
+  });
+  if(day.fatigue) lines.push('疲労度: ' + day.fatigue + '/10');
+  if(day.mood !== '' && day.mood !== undefined) lines.push('気分: ' + (day.mood > 0 ? '+' + day.mood : day.mood));
+  if(day.dailyPraise) lines.push('振り返り（自分を褒める）: ' + day.dailyPraise);
+  return lines.join('\n');
+}
+
+async function generatePrompt(){
+  saveWeekNow();
+  const n = Number(document.getElementById('promptDays').value);
+  const endDate = addDays(weekStart, 6);
+  const dayTexts = [];
+  for(let i = n-1; i >= 0; i--){
+    const d = addDays(endDate, -i);
+    const {wk, wkStart} = await getWeekForDate(d);
+    if(!wk) continue;
+    const idx = Math.round((d - wkStart) / 86400000);
+    const day = wk.days && wk.days[idx];
+    if(day){
+      const txt = formatDayText(day);
+      if(txt.split('\n').length > 1) dayTexts.push(txt);
+    }
+  }
+  const persona = document.getElementById('aiPromptText').value.trim();
+  const header = '以下は直近' + n + '日分の記録です。上記の役割に沿ってこの記録を分析し、気づいた傾向・うまくいっていたこと・来週への小さな提案をコメントしてください。';
+  const body = dayTexts.length ? dayTexts.join('\n\n') : '（この期間の記録はまだ入力されていません）';
+  const output = persona + '\n\n---\n\n' + header + '\n\n' + body;
+  document.getElementById('promptOutput').value = output;
+}
+
+function copyTextarea(id){
+  const ta = document.getElementById(id);
+  if(!ta.value){ appAlert('コピーする内容がありません'); return; }
+  const fallback = ()=>{
+    try{
+      ta.select(); ta.setSelectionRange(0, 9999999);
+      const ok = document.execCommand('copy');
+      appAlert(ok ? 'コピーしました' : 'コピーできませんでした。手動で選択してコピーしてください。');
+    }catch(e){ appAlert('コピーできませんでした。手動で選択してコピーしてください。'); }
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(ta.value)
+      .then(()=>appAlert('コピーしました'))
+      .catch(fallback);
+  } else {
+    fallback();
+  }
+}
+function copyOutput(){ copyTextarea('promptOutput'); }
+
+// ---- Backup export/import ----
+async function exportAll(){
+  const data = { exportedAt: new Date().toISOString(),
+    aiPrompt: document.getElementById('aiPromptText').value, weeks:{} };
+  try{
+    const keys = await stList('week:');
+    for(const k of keys){
+      try{ const v = await stGet(k); if(v) data.weeks[k] = JSON.parse(v); }
+      catch(e){}
+    }
+  }catch(e){}
+  const json = JSON.stringify(data, null, 2);
+  document.getElementById('backupText').value = json;
+  const weekDates = Object.keys(data.weeks).map(k=>k.replace(/^week:/,'')).sort();
+  const range = weekDates.length ? `（${weekDates[0]} 〜 ${weekDates[weekDates.length-1]}）` : '';
+  let downloaded = false;
+  try{
+    const blob = new Blob([json], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'kokoro-note-backup-' + toISO(new Date()) + '.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    downloaded = true;
+  }catch(e){}
+  // 最終バックアップ日時を記録（起動時の案内に使用）
+  stSet('settings:lastExport', String(Date.now())).catch(()=>{});
+  const banner = document.getElementById('storageBanner');
+  if(banner) banner.style.display = 'none';
+  if(downloaded){
+    appAlert('書き出しました（' + Object.keys(data.weeks).length + '週分）' + range + '。\nダウンロードフォルダに保存されているはずです。\nもし見つからない場合は、下のテキスト欄の内容をコピーしてメモアプリなどに保存してください。');
+  } else {
+    appAlert('書き出しました（' + Object.keys(data.weeks).length + '週分）' + range + '。\nこの環境ではファイルの自動保存ができないため、下のテキスト欄の内容をすべてコピーして、メモアプリなどに保存してください。');
+  }
+}
+
+async function importAll(text){
+  text = (text || '').trim();
+  if(!text){ appAlert('ファイルの内容が空です。バックアップファイルを選び直してください。'); return; }
+  let data;
+  try{ data = JSON.parse(text); } catch(e){ appAlert('このファイルはバックアップの形式ではないようです。「kokoro-note-backup-〇〇.json」という名前のファイルを選んでください。'); return; }
+  if(!data.weeks){ appAlert('このファイルには週の記録データが見つかりませんでした。'); return; }
+  const keys = Object.keys(data.weeks);
+  let failCount = 0;
+  const savedKeys = [];
+  for(const k of keys){
+    const wk = data.weeks[k];
+    // データ内の最初の日付から正しい週キー（月曜日）を計算し直す。
+    // 過去バージョンやタイムゾーンの違いでキーがズレていても正しく取り込める。
+    let saveKey = k;
+    try{
+      if(wk && wk.days && wk.days[0] && /^\d{4}-\d{2}-\d{2}$/.test(wk.days[0].date)){
+        saveKey = 'week:' + toISO(getMonday(parseISODate(wk.days[0].date)));
+      }
+    }catch(e){}
+    try{
+      await stSet(saveKey, JSON.stringify(wk));
+      savedKeys.push(saveKey);
+    }
+    catch(e){ failCount++; }
+  }
+  if(data.aiPrompt){ document.getElementById('aiPromptText').value = data.aiPrompt; saveAiPrompt(); }
+  weekCache = {};
+
+  // 取り込んだ週のうち、最も新しい週へ自動的に移動して結果をすぐ確認できるようにする
+  const weekDates = savedKeys
+    .map(k => k.replace(/^week:/, ''))
+    .filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d))
+    .sort();
+  if(weekDates.length){
+    weekStart = getMonday(parseISODate(weekDates[weekDates.length - 1]));
+  }
+  await loadWeek();
+
+  const range = weekDates.length ? `（${weekDates[0]} 〜 ${weekDates[weekDates.length-1]}）` : '';
+  const failMsg = failCount ? `\n※${failCount}週分は読み込みに失敗しました。もう一度お試しください。` : '';
+  appAlert('インポートが完了しました（' + (keys.length - failCount) + '週分）' + range + failMsg + '\n最新の週の画面に移動しました。');
+}
+
+// events
+document.getElementById('aiPromptText').addEventListener('input', saveAiPrompt);
+document.getElementById('goalText').addEventListener('input', e=>{ state.goal = e.target.value; scheduleSave(); });
+document.getElementById('stepText').addEventListener('input', e=>{ state.step = e.target.value; scheduleSave(); });
+document.getElementById('reflectionText').addEventListener('input', e=>{ state.reflection = e.target.value; scheduleSave(); });
+attachSliderGuard(document.getElementById('rateRange'),
+  (v)=>{ document.getElementById('rateNum').textContent = v + '%'; },
+  (v)=>{ state.rate = Number(v); document.getElementById('rateNum').textContent = v + '%'; scheduleSave(); },
+  ()=>{ document.getElementById('rateNum').textContent = (state.rate || 0) + '%'; }
+);
+document.getElementById('prevBtn').addEventListener('click', ()=>{ saveWeekNow(); weekStart = addDays(weekStart, -7); loadWeek(); });
+document.getElementById('nextBtn').addEventListener('click', ()=>{ saveWeekNow(); weekStart = addDays(weekStart, 7); loadWeek(); });
+document.getElementById('todayBtn').addEventListener('click', ()=>{ saveWeekNow(); weekStart = getMonday(new Date()); loadWeek(); });
+
+// ===== 週一覧（記録のある週へジャンプ） =====
+async function openWeekList(){
+  saveWeekNow();
+  const body = document.getElementById('weekListBody');
+  body.innerHTML = '<p style="font-size:12px; color:var(--ink-soft); padding:8px;">読み込み中…</p>';
+  document.getElementById('weekListOverlay').style.display = 'flex';
+  let keys = [];
+  try{ keys = await stList('week:'); }catch(e){}
+  const dates = keys.map(k => k.replace(/^week:/,'')).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d)).sort().reverse();
+  if(dates.length === 0){
+    body.innerHTML = '<p style="font-size:12px; color:var(--ink-soft); padding:8px;">まだ記録のある週がありません。</p>';
+    return;
+  }
+  body.innerHTML = '';
+  const currentKey = toISO(weekStart);
+  for(const d of dates){
+    const ws = parseISODate(d);
+    const we = addDays(ws, 6);
+    const label = ws.getFullYear() + '/' + fmtShort(ws) + ' 〜 ' + (we.getFullYear() !== ws.getFullYear() ? we.getFullYear() + '/' : '') + fmtShort(we);
+    // 目標のさわりを添えて探しやすくする
+    let goalSnippet = '';
+    try{
+      const v = await stGet('week:' + d);
+      if(v){
+        const wk = JSON.parse(v);
+        if(wk.goal) goalSnippet = String(wk.goal).slice(0, 20) + (String(wk.goal).length > 20 ? '…' : '');
+      }
+    }catch(e){}
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.style.cssText = 'display:block; width:100%; text-align:left; font-family:inherit; margin:4px 0; padding:9px 10px; border:1px solid var(--rule); border-radius:6px; background:' + (d === currentKey ? 'var(--teal-soft)' : '#fff') + '; cursor:pointer;';
+    btn.innerHTML = '<span style="font-size:13px; color:var(--ink); font-weight:' + (d === currentKey ? '700' : '500') + ';">' + label + (d === currentKey ? '（表示中）' : '') + '</span>' +
+      (goalSnippet ? '<span style="display:block; font-size:11px; color:var(--ink-soft); margin-top:2px;">目標: ' + esc(goalSnippet) + '</span>' : '');
+    btn.onclick = ()=>{
+      document.getElementById('weekListOverlay').style.display = 'none';
+      weekStart = getMonday(ws);
+      loadWeek();
+    };
+    body.appendChild(btn);
+  }
+}
+document.getElementById('weekListBtn').addEventListener('click', openWeekList);
+
+document.getElementById('weekListClose').addEventListener('click', ()=>{ document.getElementById('weekListOverlay').style.display = 'none'; });
+document.getElementById('emotionPickClose').addEventListener('click', closeEmotionPicker);
+document.getElementById('emotionEditBtn').addEventListener('click', ()=>{
+  const area = document.getElementById('emotionEditArea');
+  const btn = document.getElementById('emotionEditBtn');
+  if(area.style.display === 'none'){
+    document.getElementById('emotionEditText').value = emotionPresets.join('\n');
+    area.style.display = 'block';
+    btn.textContent = '編集を保存';
+  } else {
+    applyEmotionEdit();
+    area.style.display = 'none';
+    btn.textContent = 'リストを編集';
+    renderEmotionChips();
+  }
+});
+document.getElementById('resetBtn').addEventListener('click', async ()=>{
+  const ok = await appConfirm('この週の記録をすべて消去します。\n本当に削除しますか？\n（この操作は元に戻せません）');
+  if(ok){
+    state = blankWeek(weekStart); renderAll(); saveWeekNow();
+    appAlert('この週の記録を消去しました。');
+  }
+});
+document.getElementById('genPromptBtn').addEventListener('click', generatePrompt);
+document.getElementById('copyPromptBtn').addEventListener('click', copyOutput);
+document.getElementById('copyBackupBtn').addEventListener('click', ()=> copyTextarea('backupText'));
+document.getElementById('resetPromptBtn').addEventListener('click', async ()=>{
+  const ok = await appConfirm('コメント用プロンプトを初期状態（分析用プロンプト）に戻します。\n現在の編集内容は失われます。よろしいですか？');
+  if(ok){
+    document.getElementById('aiPromptText').value = DEFAULT_AI_PROMPT;
+    saveAiPrompt();
+    appAlert('初期プロンプトに戻しました。');
+  }
+});
+document.getElementById('exportBtn').addEventListener('click', exportAll);
+document.getElementById('importBtn').addEventListener('click', ()=>{
+  document.getElementById('importFile').click();
+});
+document.getElementById('importFile').addEventListener('change', (e)=>{
+  const file = e.target.files && e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=> importAll(String(reader.result));
+  reader.onerror = ()=> appAlert('ファイルを読み取れませんでした。もう一度お試しください。');
+  reader.readAsText(file);
+  e.target.value = ''; // 同じファイルを続けて選び直せるようにリセット
+});
+
+function setupToggle(btnId, sectionId, label){
+  const btn = document.getElementById(btnId);
+  const section = document.getElementById(sectionId);
+  btn.addEventListener('click', ()=>{
+    const show = section.style.display === 'none';
+    section.style.display = show ? 'block' : 'none';
+    btn.textContent = label + (show ? ' ▴ 閉じる' : ' ▾');
+    if(show) section.scrollIntoView({behavior:'smooth', block:'start'});
+  });
+}
+setupToggle('toggleAiBtn', 'aiSection', 'AIにコメントをもらう');
+setupToggle('togglePdfBtn', 'pdfSection', 'PDF出力');
+setupToggle('toggleBackupBtn', 'backupSection', 'データのバックアップ');
+document.getElementById('pdfBtn').addEventListener('click', printPdf);
+document.getElementById('pdfFileBtn').addEventListener('click', exportPrintFile);
+
+// ===== PDF出力（A4横・印刷） =====
+function esc(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function printSlotHTML(slot){
+  if(!slot) return '';
+  const parts = [];
+  if(slot.text) parts.push(esc(slot.text));
+  if(slot.achieve) parts.push('達成度 ' + esc(slot.achieve) + '/10');
+  (slot.emotions||[]).forEach(e=>{
+    if(e.name || e.value){
+      parts.push('<span class="print-emotion">' + esc(e.name || '感情') + (e.value ? ' ' + esc(e.value) + '/10' : '') + '</span>');
+    }
+  });
+  return parts.join('<br>');
+}
+function buildMoodSvg(moods){
+  // 気分(-5〜+5)の波グラフをSVG文字列で生成（アプリ内グラフと同じ描き方）
+  const W = 700, H = 110, padX = 30, padY = 12;
+  const plotW = W - padX*2, plotH = H - padY*2;
+  const vals = moods.map(m => (m === '' || m === undefined || m === null) ? null : Number(m));
+  const yFor = v => padY + plotH - ((v + 5) / 10) * plotH;
+  const xFor = i => padX + (plotW / 6) * i;
+  let s = '';
+  s += `<line x1="${padX}" y1="${yFor(0)}" x2="${W-padX}" y2="${yFor(0)}" stroke="#B8AE8C" stroke-width="1" stroke-dasharray="4 4"/>`;
+  s += `<text x="${padX-6}" y="${padY+4}" font-size="9" fill="#7A7360" text-anchor="end">＋</text>`;
+  s += `<text x="${padX-6}" y="${H-padY}" font-size="9" fill="#7A7360" text-anchor="end">－</text>`;
+  WEEKDAYS.forEach((wd,i)=>{ s += `<text x="${xFor(i)}" y="${H-1}" font-size="9" fill="#7A7360" text-anchor="middle">${wd}</text>`; });
+  const pts = vals.map((v,i)=> v===null ? null : [xFor(i), yFor(v)]);
+  if(pts.some(p=>p)){
+    let d = ''; let prev = null;
+    pts.forEach((p)=>{
+      if(!p){ prev = null; return; }
+      if(!prev){ d += `M ${p[0]} ${p[1]} `; }
+      else { const midX=(prev[0]+p[0])/2; d += `C ${midX} ${prev[1]}, ${midX} ${p[1]}, ${p[0]} ${p[1]} `; }
+      prev = p;
+    });
+    s += `<path d="${d}" fill="none" stroke="#4B4E8C" stroke-width="2" stroke-linecap="round"/>`;
+    pts.forEach(p=>{ if(p) s += `<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="#4B4E8C"/>`; });
+  }
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%; height:22mm; display:block;">${s}</svg>`;
+}
+function buildPrintWeekHTML(wk, wkStartDate){
+  const end = addDays(wkStartDate, 6);
+  const title = wkStartDate.getFullYear() + '/' + fmtShort(wkStartDate) + ' 〜 ' +
+    (end.getFullYear() !== wkStartDate.getFullYear() ? end.getFullYear() + '/' : '') + fmtShort(end);
+  const days = (wk && wk.days) || [];
+  // 角セル（項目名列の見出し）を先頭に入れる：これがないと見出しとデータの列がズレる
+  const headCells = ['<th class="print-corner"></th>'];
+  for(let i=0;i<7;i++){
+    const d = addDays(wkStartDate, i);
+    const cls = i===5 ? ' class="print-sat"' : (i===6 ? ' class="print-sun"' : '');
+    headCells.push('<th' + cls + '>' + WEEKDAYS[i] + '<span class="print-date">' + fmtShort(d) + '</span></th>');
+  }
+  const rowDefs = [
+    ['天気', d=> esc(d.weather)],
+    ['起床/就寝', d=> (d.wake||d.sleep) ? esc(d.wake||'-') + ' / ' + esc(d.sleep||'-') : ''],
+    ['食欲', d=> esc(d.appetite)],
+    ['今日の目標', d=> esc(d.dailyGoal)],
+    ['午前', d=> printSlotHTML(d.morning)],
+    ['午後', d=> printSlotHTML(d.afternoon)],
+    ['夕方〜', d=> printSlotHTML(d.evening)],
+    ['疲労度', d=> d.fatigue ? esc(d.fatigue) + '/10' : ''],
+    ['気分', d=> (d.mood !== '' && d.mood !== undefined) ? (Number(d.mood) > 0 ? '+' : '') + esc(d.mood) : ''],
+    ['振り返り', d=> esc(d.dailyPraise)]
+  ];
+  let rows = '';
+  rowDefs.forEach(([label, fn])=>{
+    rows += '<tr><th>' + label + '</th>';
+    for(let i=0;i<7;i++){
+      const day = days[i] || {};
+      rows += '<td>' + fn(day) + '</td>';
+    }
+    rows += '</tr>';
+  });
+  // 目標ブロック
+  let goalBlock = '';
+  if(wk && (wk.goal || wk.step || wk.rate)){
+    goalBlock = '<div class="print-goal">';
+    if(wk.goal) goalBlock += '<div><span class="print-goal-label">今週の目標</span>' + esc(wk.goal) + '</div>';
+    if(wk.step) goalBlock += '<div><span class="print-goal-label">やること</span>' + esc(wk.step) + '</div>';
+    if(wk.rate) goalBlock += '<div><span class="print-goal-label">達成率</span>' + esc(wk.rate) + '%</div>';
+    goalBlock += '</div>';
+  }
+  // 気分の波グラフ
+  const moods = [];
+  for(let i=0;i<7;i++){ moods.push(days[i] ? days[i].mood : null); }
+  const graphBlock = '<div class="print-graph"><div class="print-section-label">きもちの波</div>' + buildMoodSvg(moods) + '</div>';
+  // 振り返り
+  let reflection = '';
+  if(wk && wk.reflection){
+    reflection = '<div class="print-reflection"><div class="print-section-label">一週間の振り返り</div>' + esc(wk.reflection) + '</div>';
+  }
+  return '<div class="print-week">' +
+    '<div class="print-head"><span class="print-title">こころノート</span><span class="print-range">' + title + '</span></div>' +
+    goalBlock +
+    '<table class="print-table"><thead><tr>' + headCells.join('') + '</tr></thead><tbody>' + rows + '</tbody></table>' +
+    graphBlock +
+    reflection +
+    '</div>';
+}
+async function collectPrintBlocks(){
+  saveWeekNow();
+  const n = Number(document.getElementById('pdfWeeks').value);
+  const blocks = [];
+  let hasAny = false;
+  // 表示中の週から過去に向かってn週分（古い週が先のページになるよう逆順で組む）
+  for(let i = n-1; i >= 0; i--){
+    const ws = addDays(weekStart, -7*i);
+    const {wk} = await getWeekForDate(ws);
+    if(wk) hasAny = true;
+    blocks.push(buildPrintWeekHTML(wk, ws));
+  }
+  return hasAny ? blocks : null;
+}
+async function printPdf(){
+  const blocks = await collectPrintBlocks();
+  if(!blocks){ appAlert('対象期間に記録がありません。'); return; }
+  document.getElementById('printArea').innerHTML = blocks.join('');
+  // 印刷ダイアログを開く（スマホでは「PDFとして保存」を選択）
+  setTimeout(()=> window.print(), 100);
+}
+// 印刷レイアウトの体裁（アプリ内印刷と書き出しファイルで共通）
+const PRINT_CSS_CORE = `
+.print-week *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+.print-week{
+  page-break-after:always; padding:4mm;
+  font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","BIZ UDGothic","Yu Gothic","Noto Sans JP","Meiryo",sans-serif;
+  color:#2B2A24; background:#FDFBF4;
+}
+.print-week:last-child{ page-break-after:auto; }
+.print-head{ display:flex; align-items:baseline; justify-content:space-between; border-bottom:2pt solid #4B4E8C; padding-bottom:1.5mm; margin-bottom:2mm; }
+.print-title{ font-family:"Hiragino Mincho ProN","BIZ UDMincho","Yu Mincho","Noto Serif JP",serif; font-size:13pt; font-weight:700; letter-spacing:0.08em; color:#33355F; }
+.print-range{ font-size:9pt; color:#2B2A24; }
+.print-goal{ border:0.6pt solid #D8CCA9; border-left:2.5pt solid #4B4E8C; background:#FEFCF5; padding:1.5mm 2.5mm; margin-bottom:2mm; font-size:8pt; line-height:1.6; }
+.print-goal-label{ display:inline-block; font-weight:700; color:#33355F; margin-right:2mm; min-width:14mm; }
+.print-table{ border-collapse:collapse; width:100%; table-layout:fixed; background:#fff; }
+.print-table th, .print-table td{ border:0.5pt solid #C4B88F; padding:1mm 1.2mm; font-size:7pt; vertical-align:top; line-height:1.45; word-wrap:break-word; }
+.print-table thead th{ background:#E4E3F3; color:#33355F; font-size:7.5pt; font-weight:700; text-align:center; }
+.print-table thead th.print-sat{ color:#2F7A6F; }
+.print-table thead th.print-sun{ color:#A2483A; }
+.print-corner{ width:15mm; }
+.print-date{ display:block; font-size:6.5pt; font-weight:400; color:#7A7360; }
+.print-table tbody th{ background:#EFE8D4; font-family:"Hiragino Mincho ProN","BIZ UDMincho","Yu Mincho","Noto Serif JP",serif; font-size:7.5pt; font-weight:500; text-align:left; white-space:nowrap; width:15mm; }
+.print-table tbody tr:nth-child(odd) td{ background:#FCFAF2; }
+.print-section-label{ font-family:"Hiragino Mincho ProN","BIZ UDMincho","Yu Mincho","Noto Serif JP",serif; font-size:8.5pt; font-weight:700; color:#33355F; margin:2mm 0 1mm; }
+.print-graph{ border:0.6pt solid #D8CCA9; background:#fff; padding:1mm 2mm 1.5mm; margin-top:2mm; }
+.print-graph .print-section-label{ margin-top:0; }
+.print-reflection{ border:0.6pt solid #D8CCA9; border-left:2.5pt solid #4B4E8C; background:#FEFCF5; padding:1.5mm 2.5mm; margin-top:2mm; font-size:8pt; line-height:1.6; }
+.print-reflection .print-section-label{ margin-top:0; }
+.print-emotion{ color:#54503f; }
+`;
+const PRINT_FILE_CSS = PRINT_CSS_CORE + `
+@page{ size:A4 landscape; margin:8mm; }
+body{ margin:0; background:#fff; }
+.open-hint{ padding:8px 12px; background:#FFF7EC; border:1px solid #D8CCA9; border-radius:6px; font-size:12px; margin:8px; font-family:sans-serif; }
+@media print{ .open-hint{ display:none; } }
+`;
+// アプリ内印刷にも同じ体裁を適用
+(function(){
+  const st = document.createElement('style');
+  st.textContent = PRINT_CSS_CORE;
+  document.head.appendChild(st);
+})();
+async function exportPrintFile(){
+  const blocks = await collectPrintBlocks();
+  if(!blocks){ appAlert('対象期間に記録がありません。'); return; }
+  const doc = '<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">' +
+    '<title>こころノート 印刷用</title><style>' + PRINT_FILE_CSS + '</style></head><body>' +
+    '<div class="open-hint">このページを開いたら自動で印刷画面が開きます。開かない場合はブラウザのメニューから「印刷」を選び、プリンターの代わりに「PDFとして保存」を選択してください。</div>' +
+    blocks.join('') +
+    '<scr' + 'ipt>window.addEventListener("load",function(){setTimeout(function(){try{window.print();}catch(e){}},400);});</scr' + 'ipt>' +
+    '</body></html>';
+  let downloaded = false;
+  try{
+    const blob = new Blob([doc], {type:'text/html'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'kokoro-note-print-' + toISO(new Date()) + '.html';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    downloaded = true;
+  }catch(e){}
+  if(downloaded){
+    appAlert('印刷用ファイルを書き出しました。\nダウンロードしたファイルをSafariやChromeで開くと、自動で印刷画面が開きます。プリンターの代わりに「PDFとして保存」を選んでください。');
+  }else{
+    appAlert('この環境ではファイルの書き出しができませんでした。\nアプリのHTMLファイルを端末にダウンロードしてブラウザで開き、そちらからPDF出力をお試しください。');
+  }
+}
+
+// ===== 起動時チェック（ローカル利用向け） =====
+// 1. 保存機能が使えるかを実際に書き込んで確認し、使えない場合は目立つ警告を出す
+// 2. 最後にバックアップを書き出してからの日数を表示して、定期的な書き出しを促す
+async function startupCheck(){
+  let lsOk = false;
+  try{ localStorage.setItem(LS_PREFIX+'probe','1'); localStorage.removeItem(LS_PREFIX+'probe'); lsOk = true; }catch(e){}
+  let appOk = false;
+  if(hasAppStorage()){
+    try{
+      await window.storage.set('probe:startup', '1', false);
+      appOk = true;
+      try{ await window.storage.delete('probe:startup', false); }catch(e){}
+    }catch(e){}
+  }
+  const banner = document.getElementById('storageBanner');
+  if(!lsOk && !appOk){
+    setSaveStatus('保存機能が使えません');
+    banner.style.display = 'block';
+    banner.innerHTML = '<strong>⚠ この開き方では記録を保存できません。</strong><br>' +
+      '入力しても閉じると消えてしまいます。ファイルをブラウザ（Safari / Chrome など）で直接開き直してください。' +
+      'iPhoneの場合は「ファイル」アプリのプレビューではなく、共有ボタンから「Safariで開く」を選んでください。';
+    return;
+  }
+  // バックアップ促し
+  try{
+    const last = await stGet('settings:lastExport');
+    const weeks = await stList('week:');
+    if(weeks.length === 0) return; // まだ記録がなければ何も出さない
+    let msg = '';
+    if(!last){
+      msg = 'まだバックアップを書き出したことがありません。「データのバックアップ」から書き出しておくと、端末やブラウザのデータが消えても記録を復元できます。';
+    } else {
+      const days = Math.floor((Date.now() - Number(last)) / 86400000);
+      if(days >= 14){
+        msg = '最後のバックアップから' + days + '日経っています。「データのバックアップ」から書き出しておくと安心です。';
+      }
+    }
+    if(msg){
+      banner.style.display = 'block';
+      banner.style.borderLeftColor = 'var(--teal)';
+      banner.innerHTML = '💾 ' + msg;
+    }
+  }catch(e){}
+}
+startupCheck();
+loadEmotionPresets();
+loadAiPrompt();
+loadWeek();
+
+// ===== PWA対応（https配信時のみ有効。ファイルとして開いた場合は自動的にスキップ） =====
+if(location.protocol === 'https:' && 'serviceWorker' in navigator){
+  // オフラインでも開けるように本体をキャッシュ
+  navigator.serviceWorker.register('sw.js').catch(()=>{ /* 失敗しても通常動作に影響なし */ });
+}
+if(navigator.storage && navigator.storage.persist){
+  // ブラウザに「このサイトのデータは自動削除しないで」とお願いする（対応環境のみ）
+  navigator.storage.persist().catch(()=>{});
+}
+</script>
+</body>
+</html>
