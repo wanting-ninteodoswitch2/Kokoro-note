@@ -1,0 +1,23 @@
+# ビルド成果物
+*.iml
+.gradle
+/build
+/captures
+.externalNativeBuild
+.cxx
+app/build/
+
+# IDE
+/.idea
+*.swp
+.DS_Store
+
+# ローカル環境固有（SDKパスなど）
+local.properties
+
+# 署名鍵：絶対にコミットしない
+# 流出すると第三者があなたのアプリを装った偽の更新版を作れてしまう
+*.jks
+*.keystore
+keystore.properties
+signing.properties

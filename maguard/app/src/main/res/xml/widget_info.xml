@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ウィジェットの設定。
+  updatePeriodMillis の最小値は 1800000（30分）。
+  これより短くしてもOSに無視されるため、細かい更新が必要なときは
+  コード側から明示的に更新を要求する（UsageWidgetProvider.requestUpdate）。
+
+  targetCellWidth / targetCellHeight は API 31 で追加された属性で、
+  それ以前の端末では単に無視される（エラーにはならない）。
+  古い端末では minWidth / minHeight がサイズ決定に使われるため、
+  両方を併記しておく必要がある。
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="180dp"
+    android:minHeight="110dp"
+    android:minResizeWidth="180dp"
+    android:minResizeHeight="110dp"
+    android:targetCellWidth="3"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="1800000"
+    android:initialLayout="@layout/widget_usage"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen"
+    android:description="@string/widget_description" />

@@ -1,0 +1,40 @@
+<resources>
+    <style name="Theme.MaGuard" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/bg</item>
+        <item name="colorPrimary">@color/accent</item>
+    </style>
+
+    <!-- 一時停止画面用：全画面表示にして没入感を出す -->
+    <style name="Theme.MaGuard.Pause" parent="Theme.MaGuard">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
+    <!-- 統計カード用のスタイル。同じ見た目を3回書かずに済む -->
+    <style name="StatBox">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">@color/surface</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:layout_margin">3dp</item>
+    </style>
+
+    <style name="StatValue">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/accent</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">monospace</item>
+    </style>
+
+    <style name="StatLabel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/textMuted</item>
+        <item name="android:textSize">11sp</item>
+    </style>
+</resources>

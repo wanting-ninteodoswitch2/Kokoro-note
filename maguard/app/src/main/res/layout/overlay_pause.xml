@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="#F214171F"
+    android:padding="32dp">
+
+    <TextView
+        android:id="@+id/headlineText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/textMuted"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/ruleText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/accent"
+        android:textSize="12sp"
+        android:paddingTop="6dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/factText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/text"
+        android:textSize="15sp"
+        android:paddingTop="10dp"
+        android:visibility="gone" />
+
+    <!--
+      呼吸アニメーションの中央にカウントダウンを重ねる。
+      FrameLayout を使うと子要素を重ねて配置できる。
+    -->
+    <FrameLayout
+        android:id="@+id/breathContainer"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        android:layout_marginTop="20dp">
+
+        <com.uma.maguard.BreathingView
+            android:id="@+id/breathingView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <TextView
+            android:id="@+id/countdownText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textColor="#14171F"
+            android:textSize="44sp"
+            android:textStyle="bold"
+            android:fontFamily="monospace" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/questionGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingTop="24dp">
+
+        <TextView
+            android:id="@+id/questionText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text"
+            android:textSize="22sp"
+            android:paddingBottom="20dp" />
+
+        <!-- 摩擦の仕掛け（長押しの進捗 / 理由入力 / 書き写し） -->
+        <LinearLayout
+            android:id="@+id/frictionGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone"
+            android:paddingBottom="16dp">
+
+            <TextView
+                android:id="@+id/frictionPrompt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/textMuted"
+                android:textSize="14sp"
+                android:gravity="center"
+                android:paddingBottom="10dp" />
+
+            <EditText
+                android:id="@+id/frictionInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text"
+                android:textColorHint="#55EDEDF2"
+                android:textSize="15sp"
+                android:background="@color/surface"
+                android:padding="12dp"
+                android:inputType="text"
+                android:maxLines="3"
+                android:importantForAutofill="no"
+                android:visibility="gone" />
+
+            <ProgressBar
+                android:id="@+id/frictionProgress"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="220dp"
+                android:layout_height="6dp"
+                android:max="100"
+                android:progress="0"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/cancelButton"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="220dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp" />
+
+        <Button
+            android:id="@+id/openButton"
+            android:layout_width="220dp"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+</LinearLayout>

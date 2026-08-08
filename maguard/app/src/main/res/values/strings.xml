@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">ま。Guard</string>
+    <string name="accessibility_service_description">
+        選択したアプリを開こうとしたときに、一時停止画面を挟みます。
+        画面の内容は読み取らず、どのアプリが前面に来たかだけを検知します。
+    </string>
+    <string name="widget_description">今日の使用時間と、やめられた回数をホーム画面に表示します</string>
+</resources>
