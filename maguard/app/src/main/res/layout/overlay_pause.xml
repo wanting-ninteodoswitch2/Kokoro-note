@@ -134,7 +134,7 @@
             android:layout_height="56dp"
             android:layout_marginBottom="16dp"
             android:background="@drawable/button_pause_primary"
-            android:foreground="?attr/selectableItemBackground"
+            android:foreground="?android:attr/selectableItemBackground"
             android:textColor="@color/bg"
             android:textSize="16sp"
             android:textStyle="bold"
@@ -152,7 +152,7 @@
             android:paddingEnd="16dp"
             android:paddingTop="10dp"
             android:paddingBottom="10dp"
-            android:background="?attr/selectableItemBackground"
+            android:background="?android:attr/selectableItemBackground"
             android:textColor="@color/textMuted"
             android:textSize="14sp"
             android:textAllCaps="false" />

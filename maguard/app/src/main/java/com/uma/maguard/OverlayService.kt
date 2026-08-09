@@ -147,7 +147,16 @@ class OverlayService : Service() {
         val hardBlock = activeRule?.blocked == true || mode == MODE_DAILY_LIMIT
 
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        val view = LayoutInflater.from(this).inflate(R.layout.overlay_pause, null)
+
+        // このサービスは Activity ではないため、テーマ解決の経路が
+        // Activity 経由のときと異なる場合がある。inflate 自体が失敗する
+        // 可能性を考慮し、ここで落ちてもプロセスごとクラッシュさせない。
+        val view = try {
+            LayoutInflater.from(this).inflate(R.layout.overlay_pause, null)
+        } catch (e: Exception) {
+            stopSelf()
+            return
+        }
         overlayView = view
 
         val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -182,152 +191,163 @@ class OverlayService : Service() {
             return
         }
 
-        // このウィンドウはフォーカスを受け取るため、戻るキーを自前で処理しないと
-        // 何も起きず「閉じられない」状態になる。戻る＝やめておく、として扱う。
-        view.isFocusableInTouchMode = true
-        view.requestFocus()
-        view.setOnKeyListener { _, keyCode, event ->
-            if (keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_UP) {
+        // ここから先はビューの組み立てと文言のセットで、失敗する要素は
+        // 本来ないはずだが、機種差や将来の変更で findViewById が null を
+        // 返す・想定外の例外を投げるといった事態が起きても、addView 済みの
+        // ウィンドウを画面に残したままプロセスごと落とすよりは、
+        // 諦めて閉じる方が実害が小さい。
+        try {
+            // このウィンドウはフォーカスを受け取るため、戻るキーを自前で処理しないと
+            // 何も起きず「閉じられない」状態になる。戻る＝やめておく、として扱う。
+            view.isFocusableInTouchMode = true
+            view.requestFocus()
+            view.setOnKeyListener { _, keyCode, event ->
+                if (keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_UP) {
+                    MaAccessibilityService.clearGrace(this, packageName)
+                    UsageAlarmScheduler.cancel(this, packageName)
+                    record(resisted = true)
+                    removeOverlay()
+                    goHome()
+                    true
+                } else {
+                    false
+                }
+            }
+
+            val headline = view.findViewById<TextView>(R.id.headlineText)
+            val ruleText = view.findViewById<TextView>(R.id.ruleText)
+            val factText = view.findViewById<TextView>(R.id.factText)
+            val countdownText = view.findViewById<TextView>(R.id.countdownText)
+            val breathingView = view.findViewById<BreathingView>(R.id.breathingView)
+            val breathContainer = view.findViewById<View>(R.id.breathContainer)
+            val questionGroup = view.findViewById<View>(R.id.questionGroup)
+            val questionText = view.findViewById<TextView>(R.id.questionText)
+            val openButton = view.findViewById<Button>(R.id.openButton)
+            val cancelButton = view.findViewById<Button>(R.id.cancelButton)
+
+            // モードごとの文言
+            when (mode) {
+                MODE_USAGE -> {
+                    // 90秒以内の短い中断は同じセッションとして数えているため、
+                    // 「連続」ではなく「このセッションで」という言い方にする
+                    headline.text = "${sessionMinutes}分、見ています。"
+                    questionText.text = "まだ、続ける？"
+                    openButton.text = "もう少しだけ"
+                    cancelButton.text = "ここで終わる"
+                }
+                MODE_DAILY_LIMIT -> {
+                    headline.text = "今日の上限に達しました。"
+                    questionText.text = "今日は、ここまで。"
+                    cancelButton.text = "閉じる"
+                }
+                else -> {
+                    headline.text = "ひと呼吸。"
+                    questionText.text = "まだ、見たい？"
+                    openButton.text = "見る"
+                    cancelButton.text = "やめておく"
+                }
+            }
+
+            // 実測値の提示。これが一番効く情報なので、常に見せる
+            val facts = mutableListOf<String>()
+            if (todayMinutes > 0) facts.add("今日 ${formatDuration(todayMinutes)}")
+            if (todayLaunches > 0) facts.add("${todayLaunches}回目")
+            if (facts.isNotEmpty()) {
+                factText.visibility = View.VISIBLE
+                factText.text = facts.joinToString("・")
+            } else {
+                factText.visibility = View.GONE
+            }
+
+            if (activeRule != null) {
+                ruleText.visibility = View.VISIBLE
+                ruleText.text = "${activeRule.label}（${activeRule.rangeLabelWithNote()}）"
+            } else {
+                ruleText.visibility = View.GONE
+            }
+
+            // ＜「やめておく」は最初から見せる＞
+            //
+            // PNAS の研究（Grüning et al., 2023）は、この種の介入を
+            //   (1) 離脱の選択肢を出す
+            //   (2) 時間遅延による摩擦
+            //   (3) 熟慮を促すメッセージ
+            // の3要素に分解して効果を比較し、最も効果が大きいのは
+            // (1) の「離脱の選択肢」だと結論づけている。
+            //
+            // 以前の実装はカウントダウンが終わるまで選択肢を隠していたため、
+            // 一番効くものを待ち時間の後ろに置いてしまっていた。
+            // やめたい人ほど待たされる、という逆の設計になっていた。
+            //
+            // 現在は「やめておく」を即座に押せるようにし、
+            // 待ち時間は「見る」側にだけ課している。
+            // 摩擦は開くことに対してかけるものであって、やめることに
+            // かけるものではない。
+            questionGroup.visibility = View.VISIBLE
+            // GONE ではなく INVISIBLE にして場所だけ先に確保しておく。
+            // GONE だと「見る」が現れた瞬間にレイアウト全体が動き、
+            // 指を置いていた位置に突然ボタンが来て誤タップを招く。
+            // 開くつもりがなかった人を開かせてしまうのは最悪の失敗なので、
+            // 表示位置は最初から固定しておく。
+            openButton.visibility = View.INVISIBLE
+            openButton.isEnabled = false
+            view.findViewById<View>(R.id.frictionGroup).visibility = View.GONE
+            countdownText.text = config.pauseSeconds.toString()
+            breathingView.start()
+
+            // 500ms 余分に持たせているのは、CountDownTimer の刻みが
+            // ぴったり1秒ではないため。素直に秒数×1000 を渡すと、
+            // 最初の数字が一瞬で消えたり、最後の1秒が極端に短くなったりして、
+            // 「間を取る」ための画面としては落ち着かない見え方になる。
+            timer = object : CountDownTimer(config.pauseSeconds * 1000L + 500L, 1000L) {
+                override fun onTick(ms: Long) {
+                    countdownText.text = ((ms / 1000) + 1).toString()
+                }
+
+                override fun onFinish() {
+                    countdownText.text = ""
+                    // 待ち時間が明けたら呼吸の円は役目を終える。
+                    // 残しておくと、選択を迫られている場面で視線が散る。
+                    breathingView.stop()
+                    breathContainer.visibility = View.GONE
+
+                    if (hardBlock) {
+                        // ブロック時は「見る」を場所ごと消してよい
+                        openButton.visibility = View.GONE
+                        if (mode != MODE_DAILY_LIMIT) {
+                            questionText.text = "いまは、開かない時間。"
+                            cancelButton.text = "閉じる"
+                        }
+                        return
+                    }
+
+                    // 待ち時間が明けて初めて「見る」が押せるようになる
+                    openButton.visibility = View.VISIBLE
+                    openButton.isEnabled = true
+
+                    // 摩擦の仕掛けを有効化。条件を満たすと onUnlocked が呼ばれる
+                    friction = FrictionController(
+                        context = this@OverlayService,
+                        root = view,
+                        mode = config.friction
+                    ) { reason ->
+                        reason?.let { Prefs(this@OverlayService).recordReason(packageName, it) }
+                        unlockAndOpen(packageName, config, mode)
+                    }.also { it.attach() }
+                }
+            }.start()
+
+            cancelButton.setOnClickListener {
                 MaAccessibilityService.clearGrace(this, packageName)
                 UsageAlarmScheduler.cancel(this, packageName)
                 record(resisted = true)
                 removeOverlay()
                 goHome()
-                true
-            } else {
-                false
             }
-        }
-
-        val headline = view.findViewById<TextView>(R.id.headlineText)
-        val ruleText = view.findViewById<TextView>(R.id.ruleText)
-        val factText = view.findViewById<TextView>(R.id.factText)
-        val countdownText = view.findViewById<TextView>(R.id.countdownText)
-        val breathingView = view.findViewById<BreathingView>(R.id.breathingView)
-        val breathContainer = view.findViewById<View>(R.id.breathContainer)
-        val questionGroup = view.findViewById<View>(R.id.questionGroup)
-        val questionText = view.findViewById<TextView>(R.id.questionText)
-        val openButton = view.findViewById<Button>(R.id.openButton)
-        val cancelButton = view.findViewById<Button>(R.id.cancelButton)
-
-        // モードごとの文言
-        when (mode) {
-            MODE_USAGE -> {
-                // 90秒以内の短い中断は同じセッションとして数えているため、
-                // 「連続」ではなく「このセッションで」という言い方にする
-                headline.text = "${sessionMinutes}分、見ています。"
-                questionText.text = "まだ、続ける？"
-                openButton.text = "もう少しだけ"
-                cancelButton.text = "ここで終わる"
-            }
-            MODE_DAILY_LIMIT -> {
-                headline.text = "今日の上限に達しました。"
-                questionText.text = "今日は、ここまで。"
-                cancelButton.text = "閉じる"
-            }
-            else -> {
-                headline.text = "ひと呼吸。"
-                questionText.text = "まだ、見たい？"
-                openButton.text = "見る"
-                cancelButton.text = "やめておく"
-            }
-        }
-
-        // 実測値の提示。これが一番効く情報なので、常に見せる
-        val facts = mutableListOf<String>()
-        if (todayMinutes > 0) facts.add("今日 ${formatDuration(todayMinutes)}")
-        if (todayLaunches > 0) facts.add("${todayLaunches}回目")
-        if (facts.isNotEmpty()) {
-            factText.visibility = View.VISIBLE
-            factText.text = facts.joinToString("・")
-        } else {
-            factText.visibility = View.GONE
-        }
-
-        if (activeRule != null) {
-            ruleText.visibility = View.VISIBLE
-            ruleText.text = "${activeRule.label}（${activeRule.rangeLabelWithNote()}）"
-        } else {
-            ruleText.visibility = View.GONE
-        }
-
-        // ＜「やめておく」は最初から見せる＞
-        //
-        // PNAS の研究（Grüning et al., 2023）は、この種の介入を
-        //   (1) 離脱の選択肢を出す
-        //   (2) 時間遅延による摩擦
-        //   (3) 熟慮を促すメッセージ
-        // の3要素に分解して効果を比較し、最も効果が大きいのは
-        // (1) の「離脱の選択肢」だと結論づけている。
-        //
-        // 以前の実装はカウントダウンが終わるまで選択肢を隠していたため、
-        // 一番効くものを待ち時間の後ろに置いてしまっていた。
-        // やめたい人ほど待たされる、という逆の設計になっていた。
-        //
-        // 現在は「やめておく」を即座に押せるようにし、
-        // 待ち時間は「見る」側にだけ課している。
-        // 摩擦は開くことに対してかけるものであって、やめることに
-        // かけるものではない。
-        questionGroup.visibility = View.VISIBLE
-        // GONE ではなく INVISIBLE にして場所だけ先に確保しておく。
-        // GONE だと「見る」が現れた瞬間にレイアウト全体が動き、
-        // 指を置いていた位置に突然ボタンが来て誤タップを招く。
-        // 開くつもりがなかった人を開かせてしまうのは最悪の失敗なので、
-        // 表示位置は最初から固定しておく。
-        openButton.visibility = View.INVISIBLE
-        openButton.isEnabled = false
-        view.findViewById<View>(R.id.frictionGroup).visibility = View.GONE
-        countdownText.text = config.pauseSeconds.toString()
-        breathingView.start()
-
-        // 500ms 余分に持たせているのは、CountDownTimer の刻みが
-        // ぴったり1秒ではないため。素直に秒数×1000 を渡すと、
-        // 最初の数字が一瞬で消えたり、最後の1秒が極端に短くなったりして、
-        // 「間を取る」ための画面としては落ち着かない見え方になる。
-        timer = object : CountDownTimer(config.pauseSeconds * 1000L + 500L, 1000L) {
-            override fun onTick(ms: Long) {
-                countdownText.text = ((ms / 1000) + 1).toString()
-            }
-
-            override fun onFinish() {
-                countdownText.text = ""
-                // 待ち時間が明けたら呼吸の円は役目を終える。
-                // 残しておくと、選択を迫られている場面で視線が散る。
-                breathingView.stop()
-                breathContainer.visibility = View.GONE
-
-                if (hardBlock) {
-                    // ブロック時は「見る」を場所ごと消してよい
-                    openButton.visibility = View.GONE
-                    if (mode != MODE_DAILY_LIMIT) {
-                        questionText.text = "いまは、開かない時間。"
-                        cancelButton.text = "閉じる"
-                    }
-                    return
-                }
-
-                // 待ち時間が明けて初めて「見る」が押せるようになる
-                openButton.visibility = View.VISIBLE
-                openButton.isEnabled = true
-
-                // 摩擦の仕掛けを有効化。条件を満たすと onUnlocked が呼ばれる
-                friction = FrictionController(
-                    context = this@OverlayService,
-                    root = view,
-                    mode = config.friction
-                ) { reason ->
-                    reason?.let { Prefs(this@OverlayService).recordReason(packageName, it) }
-                    unlockAndOpen(packageName, config, mode)
-                }.also { it.attach() }
-            }
-        }.start()
-
-        cancelButton.setOnClickListener {
-            MaAccessibilityService.clearGrace(this, packageName)
-            UsageAlarmScheduler.cancel(this, packageName)
-            record(resisted = true)
-            removeOverlay()
-            goHome()
+        } catch (e: Exception) {
+            removeOverlayViewOnly()
+            currentTarget = null
+            stopSelf()
         }
     }
 
