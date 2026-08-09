@@ -118,17 +118,44 @@
 
         </LinearLayout>
 
+        <!--
+          ＜「やめておく」を大きく、「見る」を小さくしている理由＞
+          PNAS の研究（Grüning et al., 2023）で最も効果が大きいとされた
+          「離脱の選択肢」を、見た目でも最優先にする。
+          以前は逆に、やめておく側が地味な OutlinedButton で、
+          しかもこの半透明の背景（#F214171F）の上では枠線がほぼ見えず、
+          実機では文字だけが小さく浮いているように見えてしまっていた。
+          塗りつぶしのピル型ボタンにして確実に視認できるようにする。
+        -->
         <Button
             android:id="@+id/cancelButton"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="220dp"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp" />
+            style="@null"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/button_pause_primary"
+            android:foreground="?attr/selectableItemBackground"
+            android:textColor="@color/bg"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textAllCaps="false" />
 
+        <!-- 「見る」は選ぶハードルを上げたいので、あえて控えめなテキストリンクにする -->
         <Button
             android:id="@+id/openButton"
-            android:layout_width="220dp"
-            android:layout_height="wrap_content" />
+            style="@null"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="48dp"
+            android:minHeight="48dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:background="?attr/selectableItemBackground"
+            android:textColor="@color/textMuted"
+            android:textSize="14sp"
+            android:textAllCaps="false" />
 
     </LinearLayout>
 
