@@ -59,14 +59,31 @@ class OverlayService : Service() {
         // FOREGROUND_SERVICE_TYPE_SPECIAL_USE 自体が API 34 で追加された
         // 定数であり、マニフェストの specialUse も API 34 以降でしか
         // 有効にならない。そのため 34 未満では型なしの2引数版を使う。
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            startForeground(
-                NOTIFICATION_ID,
-                buildNotification(),
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
-            )
-        } else {
-            startForeground(NOTIFICATION_ID, buildNotification())
+        //
+        // ＜ここを try-catch で囲む理由＞
+        // startForeground はバックグラウンド起動制限（Android 12+）により
+        // ForegroundServiceStartNotAllowedException を投げることがある。
+        // 呼び出し元（MaAccessibilityService / UsageAlarmScheduler）側にも
+        // try-catch はあるが、それは startForegroundService の呼び出し自体を
+        // 囲んでいるだけで、OSが別タイミングで呼び出すこの onCreate の中の
+        // 例外までは防げない。ここで捕まえずに落ちると ま。Guard プロセス
+        // 全体がクラッシュし、繰り返し発生するとOSがアクセシビリティ
+        // サービスそのものを強制停止させてしまう（設定画面で
+        // 「動作していません」と表示される状態）。
+        // 表示できないだけなら、諦めて自分を止める方が実害が小さい。
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                startForeground(
+                    NOTIFICATION_ID,
+                    buildNotification(),
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+                )
+            } else {
+                startForeground(NOTIFICATION_ID, buildNotification())
+            }
+        } catch (e: Exception) {
+            instance = null
+            stopSelf()
         }
     }
 
