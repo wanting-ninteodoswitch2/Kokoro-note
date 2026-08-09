@@ -11,12 +11,8 @@ import android.os.PowerManager
 import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.BaseAdapter
 import android.widget.Button
-import android.widget.ListView
-import android.widget.SeekBar
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -31,13 +27,12 @@ import java.util.Locale
  * メイン画面。役割は3つ。
  *  1. セットアップ状況（3つの権限）の案内と、設定画面へのショートカット
  *  2. 今日の統計と連続日数の表示
- *  3. 対象アプリの選択と、アプリごとの詳細設定
+ *  3. 対象アプリ（すでに追加済みのもの）のプレビュー表示。
+ *     追加・削除・詳細設定は AppPickerActivity で行う。
  */
 class MainActivity : AppCompatActivity() {
 
     private lateinit var prefs: Prefs
-    private lateinit var apps: List<AppInfo>
-    private lateinit var adapter: AppListAdapter
     private var targets: MutableMap<String, Prefs.AppConfig> = mutableMapOf()
 
     // Android 13 (API 33) 以降、通知の表示にはユーザーの明示的な許可が要る。
@@ -60,10 +55,10 @@ class MainActivity : AppCompatActivity() {
         ) {
             notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
-        apps = loadLaunchableApps()
 
-        adapter = AppListAdapter()
-        findViewById<ListView>(R.id.appListView).adapter = adapter
+        findViewById<Button>(R.id.addAppButton).setOnClickListener {
+            startActivity(Intent(this, AppPickerActivity::class.java))
+        }
 
         findViewById<Button>(R.id.accessibilityButton).setOnClickListener {
             startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
@@ -109,9 +104,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // 設定画面から戻ってきたときに、権限の状態表示を更新する
+        // 設定画面やAppPickerActivityから戻ってきたときに表示を更新する
+        targets = prefs.getTargets().toMutableMap()
         refreshStatus()
         refreshStats()
+        refreshTargetApps()
     }
 
     // ---------- セットアップ状況 ----------
@@ -204,193 +201,54 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ---------- アプリ一覧 ----------
+    // ---------- 対象アプリのプレビュー ----------
 
-    private fun loadLaunchableApps(): List<AppInfo> {
+    /**
+     * すでに対象になっているアプリだけを、必要なぶんだけ表示する。
+     *
+     * 以前は端末の全アプリを ListView でここに埋め込んでいたため、
+     * リスト自体が大量の行数を抱えることになり、上のセットアップ項目に
+     * スクロール領域を圧迫されて一度に2〜3件しか見えなかった。
+     * 追加・削除・詳細設定は AppPickerActivity 側に任せ、
+     * ここは「いま何が対象か」を確認するだけの読み取り専用の表示にする。
+     * 件数は少ない前提なので ListView は使わず、行を直接 addView する。
+     */
+    private fun refreshTargetApps() {
+        val container = findViewById<LinearLayout>(R.id.targetAppsContainer)
+        container.removeAllViews()
+
         val pm = packageManager
-        val intent = Intent(Intent.ACTION_MAIN, null).apply {
-            addCategory(Intent.CATEGORY_LAUNCHER)
+        val entries = targets.keys.mapNotNull { pkg ->
+            val config = targets[pkg] ?: return@mapNotNull null
+            try {
+                val label = pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString()
+                Triple(pkg, label, config)
+            } catch (e: PackageManager.NameNotFoundException) {
+                // アンインストール済みなど。一覧には出さない
+                null
+            }
+        }.sortedBy { it.second }
+
+        findViewById<TextView>(R.id.emptyTargetsText).visibility =
+            if (entries.isEmpty()) View.VISIBLE else View.GONE
+
+        entries.forEach { (packageName, label, config) ->
+            val row = LayoutInflater.from(this).inflate(R.layout.item_app, container, false)
+            row.findViewById<TextView>(R.id.appLabel).text = label
+            row.findViewById<TextView>(R.id.appDetail).text = buildString {
+                append("${config.pauseSeconds}秒待つ / ${config.graceMinutes}分は再表示しない")
+                if (config.usageLimitMin > 0) append(" / ${config.usageLimitMin}分で再確認")
+                if (config.dailyLimitMin > 0) append(" / 1日${config.dailyLimitMin}分まで")
+                if (config.dailyLaunchLimit > 0) append(" / 1日${config.dailyLaunchLimit}回まで")
+                if (config.friction != Prefs.FrictionMode.NONE) append(" / ${config.friction.label()}")
+            }
+            row.findViewById<TextView>(R.id.appToggle).text = "ON"
+            row.findViewById<Button>(R.id.appSettingsButton).visibility = View.GONE
+            row.setOnClickListener {
+                startActivity(Intent(this, AppPickerActivity::class.java))
+            }
+            container.addView(row)
         }
-        return pm.queryIntentActivities(intent, PackageManager.MATCH_ALL)
-            .map { AppInfo(it.activityInfo.packageName, it.loadLabel(pm).toString()) }
-            .filter { it.packageName != packageName }
-            .distinctBy { it.packageName }
-            .sortedBy { it.label }
-    }
-
-    /**
-     * アプリ一覧のアダプター。
-     * 行をタップ＝対象のオン/オフ切り替え、「設定」ボタン＝詳細設定ダイアログ。
-     */
-    private inner class AppListAdapter : BaseAdapter() {
-        override fun getCount() = apps.size
-        override fun getItem(position: Int) = apps[position]
-        override fun getItemId(position: Int) = position.toLong()
-
-        override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-            val view = convertView ?: LayoutInflater.from(this@MainActivity)
-                .inflate(R.layout.item_app, parent, false)
-
-            val app = apps[position]
-            val config = targets[app.packageName]
-
-            view.findViewById<TextView>(R.id.appLabel).text = app.label
-            view.findViewById<TextView>(R.id.appDetail).text = if (config != null) {
-                buildString {
-                    append("${config.pauseSeconds}秒待つ / ${config.graceMinutes}分は再表示しない")
-                    if (config.usageLimitMin > 0) append(" / ${config.usageLimitMin}分で再確認")
-                    if (config.dailyLimitMin > 0) append(" / 1日${config.dailyLimitMin}分まで")
-                    if (config.dailyLaunchLimit > 0) append(" / 1日${config.dailyLaunchLimit}回まで")
-                    if (config.friction != Prefs.FrictionMode.NONE) {
-                        append(" / ${config.friction.label()}")
-                    }
-                }
-            } else {
-                "対象外"
-            }
-            view.findViewById<TextView>(R.id.appToggle).text = if (config != null) "ON" else "OFF"
-
-            view.setOnClickListener {
-                if (targets.containsKey(app.packageName)) {
-                    targets.remove(app.packageName)
-                } else {
-                    targets[app.packageName] = Prefs.AppConfig()
-                }
-                prefs.saveTargets(targets)
-                notifyDataSetChanged()
-                UsageWidgetProvider.requestUpdate(this@MainActivity)
-            }
-
-            val settingsButton = view.findViewById<Button>(R.id.appSettingsButton)
-            settingsButton.visibility = if (config != null) View.VISIBLE else View.GONE
-            settingsButton.setOnClickListener { showConfigDialog(app, config ?: Prefs.AppConfig()) }
-
-            return view
-        }
-    }
-
-    /**
-     * アプリごとの停止秒数・猶予分数を設定するダイアログ。
-     * SNSは長めに待たせる、業務用アプリは短くする、といった調整ができる。
-     */
-    private fun showConfigDialog(app: AppInfo, current: Prefs.AppConfig) {
-        val view = LayoutInflater.from(this).inflate(R.layout.dialog_app_config, null)
-
-        val pauseSeek = view.findViewById<SeekBar>(R.id.pauseSeek)
-        val pauseValue = view.findViewById<TextView>(R.id.pauseValue)
-        val graceSeek = view.findViewById<SeekBar>(R.id.graceSeek)
-        val graceValue = view.findViewById<TextView>(R.id.graceValue)
-        val usageSeek = view.findViewById<SeekBar>(R.id.usageSeek)
-        val usageValue = view.findViewById<TextView>(R.id.usageValue)
-        val dailySeek = view.findViewById<SeekBar>(R.id.dailySeek)
-        val dailyValue = view.findViewById<TextView>(R.id.dailyValue)
-        val launchSeek = view.findViewById<SeekBar>(R.id.launchSeek)
-        val launchValue = view.findViewById<TextView>(R.id.launchValue)
-        val frictionSpinner = view.findViewById<android.widget.Spinner>(R.id.frictionSpinner)
-        val frictionDesc = view.findViewById<TextView>(R.id.frictionDesc)
-        val typeTextRow = view.findViewById<View>(R.id.typeTextRow)
-        val typeTextInput = view.findViewById<android.widget.EditText>(R.id.typeTextInput)
-
-        // SeekBarは0始まりなので、実際の値との差分を足し引きして扱う
-        // one sec の研究で使われている範囲（3〜60秒、既定6秒）に合わせる。
-        // 短すぎると摩擦にならず、長すぎるとアプリごと使われなくなる。
-        pauseSeek.max = 57          // 3〜60秒
-        pauseSeek.progress = current.pauseSeconds - 3
-        pauseValue.text = "${current.pauseSeconds}秒"
-
-        graceSeek.max = 59          // 1〜60分
-        graceSeek.progress = current.graceMinutes - 1
-        graceValue.text = "${current.graceMinutes}分"
-
-        pauseSeek.setOnSeekBarChangeListener(object : SimpleSeekListener() {
-            override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
-                pauseValue.text = "${progress + 3}秒"
-            }
-        })
-        graceSeek.setOnSeekBarChangeListener(object : SimpleSeekListener() {
-            override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
-                graceValue.text = "${progress + 1}分"
-            }
-        })
-
-        // 使用時間の上限。0のときは「なし」と表示して機能オフを分かりやすくする
-        usageSeek.max = 60                 // 0〜60分
-        usageSeek.progress = current.usageLimitMin
-        usageValue.text = usageLabel(current.usageLimitMin)
-        usageSeek.setOnSeekBarChangeListener(object : SimpleSeekListener() {
-            override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
-                usageValue.text = usageLabel(progress)
-            }
-        })
-
-        // 1日の合計使用時間の上限（0〜240分、5分刻み）
-        dailySeek.max = 48
-        dailySeek.progress = current.dailyLimitMin / 5
-        dailyValue.text = dailyLabel(current.dailyLimitMin)
-        dailySeek.setOnSeekBarChangeListener(object : SimpleSeekListener() {
-            override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
-                dailyValue.text = dailyLabel(progress * 5)
-            }
-        })
-
-        // 1日の起動回数の上限（0〜50回）
-        launchSeek.max = 50
-        launchSeek.progress = current.dailyLaunchLimit
-        launchValue.text = launchLabel(current.dailyLaunchLimit)
-        launchSeek.setOnSeekBarChangeListener(object : SimpleSeekListener() {
-            override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
-                launchValue.text = launchLabel(progress)
-            }
-        })
-
-        // 摩擦の種類を選ぶ。選ぶたびに説明が変わる
-        val modes = Prefs.FrictionMode.values()
-        frictionSpinner.adapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_dropdown_item,
-            modes.map { it.label() }
-        )
-        frictionSpinner.setSelection(modes.indexOf(current.friction))
-        typeTextInput.setText(prefs.getTypeText())
-
-        fun applyFrictionUi(mode: Prefs.FrictionMode) {
-            frictionDesc.text = mode.description()
-            typeTextRow.visibility =
-                if (mode == Prefs.FrictionMode.TYPE_TEXT) View.VISIBLE else View.GONE
-        }
-        applyFrictionUi(current.friction)
-
-        frictionSpinner.onItemSelectedListener =
-            object : android.widget.AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: android.widget.AdapterView<*>?, v: View?, position: Int, id: Long
-                ) {
-                    applyFrictionUi(modes[position])
-                }
-                override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
-            }
-
-        AlertDialog.Builder(this)
-            .setTitle(app.label)
-            .setView(view)
-            .setPositiveButton("保存") { _, _ ->
-                targets[app.packageName] = Prefs.AppConfig(
-                    pauseSeconds = pauseSeek.progress + 3,
-                    graceMinutes = graceSeek.progress + 1,
-                    usageLimitMin = usageSeek.progress,
-                    dailyLimitMin = dailySeek.progress * 5,
-                    dailyLaunchLimit = launchSeek.progress,
-                    friction = modes[frictionSpinner.selectedItemPosition]
-                )
-                if (modes[frictionSpinner.selectedItemPosition] == Prefs.FrictionMode.TYPE_TEXT) {
-                    prefs.setTypeText(typeTextInput.text.toString())
-                }
-                prefs.saveTargets(targets)
-                adapter.notifyDataSetChanged()
-                UsageWidgetProvider.requestUpdate(this)
-            }
-            .setNegativeButton("キャンセル", null)
-            .show()
     }
 
     /**
@@ -428,24 +286,5 @@ class MainActivity : AppCompatActivity() {
             .setItems(items, null)
             .setPositiveButton("閉じる", null)
             .show()
-    }
-
-    private fun usageLabel(minutes: Int) =
-        if (minutes <= 0) "なし" else "${minutes}分"
-
-    private fun dailyLabel(minutes: Int) = when {
-        minutes <= 0 -> "上限なし"
-        minutes >= 60 -> "${minutes / 60}時間${if (minutes % 60 > 0) "${minutes % 60}分" else ""}"
-        else -> "${minutes}分"
-    }
-
-    private fun launchLabel(count: Int) =
-        if (count <= 0) "上限なし" else "${count}回"
-
-    /** SeekBarのリスナーは3つのメソッド実装が必須なので、使わない分をまとめた基底クラス */
-    private open class SimpleSeekListener : SeekBar.OnSeekBarChangeListener {
-        override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {}
-        override fun onStartTrackingTouch(sb: SeekBar?) {}
-        override fun onStopTrackingTouch(sb: SeekBar?) {}
     }
 }

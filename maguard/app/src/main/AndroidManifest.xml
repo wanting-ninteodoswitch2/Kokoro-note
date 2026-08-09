@@ -80,6 +80,10 @@
             android:name=".TimeRulesActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".AppPickerActivity"
+            android:exported="false" />
+
         <service
             android:name=".OverlayService"
             android:exported="false"

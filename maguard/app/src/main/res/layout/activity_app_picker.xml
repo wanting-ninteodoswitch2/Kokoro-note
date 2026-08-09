@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  対象アプリを追加・削除・設定するための専用画面。
+
+  以前はこの一覧をメイン画面に直接埋め込んでいたため、上部の統計・
+  セットアップ項目にスクロール領域を圧迫され、一度に2〜3件しか
+  見えない状態になっていた。ここを独立した画面にして、検索もできる
+  ようにする。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/bg">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="8dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="8dp">
+
+        <TextView
+            android:id="@+id/backButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="← 戻る"
+            android:textColor="@color/accent"
+            android:textSize="15sp"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackground" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="アプリを追加"
+            android:textColor="@color/text"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:gravity="center" />
+
+        <!-- 戻るボタンと横幅を揃えて、タイトルが見た目上中央に来るようにする -->
+        <View
+            android:layout_width="56dp"
+            android:layout_height="1dp" />
+
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/searchInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
+        android:hint="検索"
+        android:inputType="text"
+        android:maxLines="1"
+        android:background="@color/surface"
+        android:textColor="@color/text"
+        android:textColorHint="@color/textMuted"
+        android:padding="12dp"
+        android:importantForAutofill="no" />
+
+    <ListView
+        android:id="@+id/pickerListView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:divider="@color/surface"
+        android:dividerHeight="1dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp" />
+
+</LinearLayout>
