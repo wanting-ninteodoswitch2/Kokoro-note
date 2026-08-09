@@ -15,9 +15,14 @@ app/build/
 # ローカル環境固有（SDKパスなど）
 local.properties
 
-# 署名鍵：絶対にコミットしない
+# 署名鍵：リリース用は絶対にコミットしない
 # 流出すると第三者があなたのアプリを装った偽の更新版を作れてしまう
 *.jks
 *.keystore
 keystore.properties
 signing.properties
+
+# ただし debug 用の鍵は例外。CI や複数の環境でビルドしても
+# 常に同じ鍵で署名されるよう、あえてリポジトリに含めている。
+# （debug 鍵は流出してもリリース版を偽装される心当たりにはならない）
+!app/debug.keystore

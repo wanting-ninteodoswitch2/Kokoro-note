@@ -15,6 +15,26 @@ android {
         versionName = "0.7.6"
     }
 
+    // debug ビルドの署名鍵を固定する。
+    //
+    // 指定しない場合、Gradle は実行環境ごとに ~/.android/debug.keystore を
+    // 自動生成する。CI（GitHub Actions）は毎回まっさらな使い捨て環境なので、
+    // ビルドのたびに違う鍵で署名された APK ができてしまい、
+    // 「以前インストールした debug ビルドの上に、新しい debug ビルドを
+    // 上書きインストールできない（署名が一致しない）」という問題が起きる。
+    //
+    // debug 用の鍵はリリース鍵と違い、流出しても「このアプリの偽の更新版を
+    // 配布できる」というリスクにはならない（Play ストアなどの配布先は
+    // リリース鍵でしか検証しないため）。プロジェクトに含めて固定するのが一般的。
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
