@@ -2,6 +2,9 @@
     <style name="Theme.MaGuard" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="android:windowBackground">@color/bg</item>
         <item name="colorPrimary">@color/accent</item>
+        <!-- アプリ全体の既定フォント。個別に fontFamily を指定していない
+             TextView / Button はすべてこれになる -->
+        <item name="android:fontFamily">@font/manrope</item>
     </style>
 
     <!-- 一時停止画面用：全画面表示にして没入感を出す -->
@@ -28,7 +31,7 @@
         <item name="android:textColor">@color/accent</item>
         <item name="android:textSize">22sp</item>
         <item name="android:textStyle">bold</item>
-        <item name="android:fontFamily">monospace</item>
+        <item name="android:fontFamily">@font/space_mono</item>
     </style>
 
     <style name="StatLabel">

@@ -55,7 +55,7 @@
             android:textColor="#14171F"
             android:textSize="44sp"
             android:textStyle="bold"
-            android:fontFamily="monospace" />
+            android:fontFamily="@font/space_mono" />
     </FrameLayout>
 
     <LinearLayout
