@@ -11,7 +11,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="20dp">
+    android:padding="24dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -21,11 +21,14 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="待つ時間" />
+            android:text="待つ時間"
+            android:textColor="@color/text"
+            android:textSize="14sp" />
         <TextView
             android:id="@+id/pauseValue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/accentText"
             android:textStyle="bold" />
     </LinearLayout>
 
@@ -33,7 +36,9 @@
         android:id="@+id/pauseSeek"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp" />
+        android:progressTint="@color/accent"
+        android:thumbTint="@color/accent"
+        android:layout_marginBottom="18dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -43,11 +48,14 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="「見る」後、再表示しない時間" />
+            android:text="「見る」後、再表示しない時間"
+            android:textColor="@color/text"
+            android:textSize="14sp" />
         <TextView
             android:id="@+id/graceValue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/accentText"
             android:textStyle="bold" />
     </LinearLayout>
 
@@ -55,7 +63,9 @@
         android:id="@+id/graceSeek"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp" />
+        android:progressTint="@color/accent"
+        android:thumbTint="@color/accent"
+        android:layout_marginBottom="18dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -65,39 +75,45 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="開いた後、再確認するまで" />
+            android:text="開いた後、再確認するまで"
+            android:textColor="@color/text"
+            android:textSize="14sp" />
         <TextView
             android:id="@+id/usageValue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/accentText"
             android:textStyle="bold" />
     </LinearLayout>
 
     <SeekBar
         android:id="@+id/usageSeek"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:progressTint="@color/accent"
+        android:thumbTint="@color/accent" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="0分にすると、この機能はオフになります"
+        android:textColor="@color/textMuted"
         android:textSize="11sp"
         android:paddingTop="4dp"
-        android:paddingBottom="16dp" />
+        android:paddingBottom="18dp" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#33888888"
-        android:layout_marginBottom="16dp" />
+        android:background="@color/border"
+        android:layout_marginBottom="18dp" />
 
     <TextView
+        style="@style/SectionHeader"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:textSize="14sp"
         android:text="1日の上限"
-        android:textStyle="bold"
-        android:paddingBottom="8dp" />
+        android:paddingBottom="10dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -107,11 +123,14 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="合計の使用時間" />
+            android:text="合計の使用時間"
+            android:textColor="@color/text"
+            android:textSize="14sp" />
         <TextView
             android:id="@+id/dailyValue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/accentText"
             android:textStyle="bold" />
     </LinearLayout>
 
@@ -119,7 +138,9 @@
         android:id="@+id/dailySeek"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp" />
+        android:progressTint="@color/accent"
+        android:thumbTint="@color/accent"
+        android:layout_marginBottom="18dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -129,39 +150,45 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="開く回数" />
+            android:text="開く回数"
+            android:textColor="@color/text"
+            android:textSize="14sp" />
         <TextView
             android:id="@+id/launchValue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/accentText"
             android:textStyle="bold" />
     </LinearLayout>
 
     <SeekBar
         android:id="@+id/launchSeek"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:progressTint="@color/accent"
+        android:thumbTint="@color/accent" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="上限を超えると「見る」が選べなくなります（設定した回数までは開けます）"
+        android:textColor="@color/textMuted"
         android:textSize="11sp"
         android:paddingTop="4dp"
-        android:paddingBottom="16dp" />
+        android:paddingBottom="18dp" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#33888888"
-        android:layout_marginBottom="16dp" />
+        android:background="@color/border"
+        android:layout_marginBottom="18dp" />
 
     <TextView
+        style="@style/SectionHeader"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:textSize="14sp"
         android:text="開くときの、ひと手間"
-        android:textStyle="bold"
-        android:paddingBottom="8dp" />
+        android:paddingBottom="10dp" />
 
     <Spinner
         android:id="@+id/frictionSpinner"
@@ -172,8 +199,9 @@
         android:id="@+id/frictionDesc"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textColor="@color/textMuted"
         android:textSize="11sp"
-        android:paddingTop="6dp" />
+        android:paddingTop="8dp" />
 
     <LinearLayout
         android:id="@+id/typeTextRow"
@@ -181,18 +209,23 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:visibility="gone"
-        android:paddingTop="12dp">
+        android:paddingTop="14dp">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="書き写す文章"
-            android:textSize="12sp" />
+            android:textColor="@color/text"
+            android:textSize="12sp"
+            android:paddingBottom="6dp" />
 
         <EditText
             android:id="@+id/typeTextInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/card_background_flat"
+            android:textColor="@color/text"
+            android:padding="10dp"
             android:inputType="text"
             android:maxLines="2"
             android:importantForAutofill="no" />

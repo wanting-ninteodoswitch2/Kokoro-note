@@ -1,0 +1,17 @@
+<resources>
+    <!-- ダークモード用の配色。トークン名は values/colors.xml と揃えてあり、
+         OSがダークモードのときはこちらが自動的に使われる。 -->
+    <color name="bg">#14171F</color>
+    <color name="surface">#1C202C</color>
+    <color name="surfaceAlt">#232838</color>
+    <color name="text">#EDEDF2</color>
+    <color name="textMuted">#8B90A3</color>
+    <color name="border">#2C3142</color>
+
+    <color name="accent">#E8A659</color>
+    <color name="accentText">#E8A659</color>
+
+    <color name="resisted">#6FBF8B</color>
+
+    <color name="overlayScrim">#F214171F</color>
+</resources>

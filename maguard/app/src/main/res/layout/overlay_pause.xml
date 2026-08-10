@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:background="#F214171F"
+    android:background="@color/overlayScrim"
     android:padding="32dp">
 
     <TextView
@@ -18,7 +18,7 @@
         android:id="@+id/ruleText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@color/accent"
+        android:textColor="@color/accentText"
         android:textSize="12sp"
         android:paddingTop="6dp"
         android:visibility="gone" />
@@ -98,9 +98,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="@color/text"
-                android:textColorHint="#55EDEDF2"
+                android:textColorHint="@color/textMuted"
                 android:textSize="15sp"
-                android:background="@color/surface"
+                android:background="@drawable/card_background_flat"
                 android:padding="12dp"
                 android:inputType="text"
                 android:maxLines="3"

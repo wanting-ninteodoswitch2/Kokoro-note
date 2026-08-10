@@ -12,6 +12,7 @@ import android.widget.ArrayAdapter
 import android.widget.BaseAdapter
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.ListView
 import android.widget.SeekBar
 import android.widget.TextView
@@ -46,7 +47,7 @@ class AppPickerActivity : AppCompatActivity() {
         adapter = AppListAdapter()
         findViewById<ListView>(R.id.pickerListView).adapter = adapter
 
-        findViewById<TextView>(R.id.backButton).setOnClickListener { finish() }
+        findViewById<ImageView>(R.id.backButton).setOnClickListener { finish() }
 
         findViewById<EditText>(R.id.searchInput).addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -80,6 +81,21 @@ class AppPickerActivity : AppCompatActivity() {
             .sortedBy { it.label }
     }
 
+    /** アプリ本来のアイコンを読み込む。取得できない場合は汎用アイコンで代替する */
+    private fun loadAppIcon(targetPackageName: String) =
+        try {
+            packageManager.getApplicationIcon(targetPackageName)
+        } catch (e: PackageManager.NameNotFoundException) {
+            androidx.core.content.ContextCompat.getDrawable(this, R.drawable.ic_apps)
+        }
+
+    /** 権限や対象アプリのON/OFF状態を、色付きのピルとして表示する共通処理 */
+    private fun applyStatusPill(view: TextView, ok: Boolean) {
+        view.text = if (ok) "ON" else "OFF"
+        view.setBackgroundResource(if (ok) R.drawable.status_pill_ok else R.drawable.status_pill_pending)
+        view.setTextColor(resources.getColor(if (ok) R.color.resisted else R.color.textMuted, theme))
+    }
+
     /**
      * アプリ一覧のアダプター。
      * 行をタップ＝対象のオン/オフ切り替え、「設定」ボタン＝詳細設定ダイアログ。
@@ -96,6 +112,7 @@ class AppPickerActivity : AppCompatActivity() {
             val app = filteredApps[position]
             val config = targets[app.packageName]
 
+            view.findViewById<ImageView>(R.id.appIcon).setImageDrawable(loadAppIcon(app.packageName))
             view.findViewById<TextView>(R.id.appLabel).text = app.label
             view.findViewById<TextView>(R.id.appDetail).text = if (config != null) {
                 buildString {
@@ -110,7 +127,7 @@ class AppPickerActivity : AppCompatActivity() {
             } else {
                 "対象外"
             }
-            view.findViewById<TextView>(R.id.appToggle).text = if (config != null) "ON" else "OFF"
+            applyStatusPill(view.findViewById(R.id.appToggle), ok = config != null)
 
             view.setOnClickListener {
                 if (targets.containsKey(app.packageName)) {

@@ -2,9 +2,16 @@
     <style name="Theme.MaGuard" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="android:windowBackground">@color/bg</item>
         <item name="colorPrimary">@color/accent</item>
-        <!-- アプリ全体の既定フォント。個別に fontFamily を指定していない
-             TextView / Button はすべてこれになる -->
+        <item name="colorSecondary">@color/accent</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/text</item>
         <item name="android:fontFamily">@font/manrope</item>
+        <item name="android:statusBarColor">@color/bg</item>
+        <item name="android:navigationBarColor">@color/bg</item>
+        <!-- ライトモードでは背景が明るいので、ステータスバー/ナビバーの
+             アイコンを暗色にする。values-night 側で false に上書きする -->
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
     </style>
 
     <!-- 一時停止画面用：全画面表示にして没入感を出す -->
@@ -13,23 +20,39 @@
         <item name="android:windowNoTitle">true</item>
     </style>
 
-    <!-- 統計カード用のスタイル。同じ見た目を3回書かずに済む -->
+    <!-- セクション見出し（「対象アプリ」「直近7日間」など） -->
+    <style name="SectionHeader">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/text</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- カード共通の外枠+余白 -->
+    <style name="CardContainer">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:background">@drawable/card_background</item>
+        <item name="android:padding">16dp</item>
+    </style>
+
+    <!-- 統計3項目 -->
     <style name="StatBox">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_weight">1</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:orientation">vertical</item>
         <item name="android:gravity">center</item>
-        <item name="android:background">@color/surface</item>
-        <item name="android:padding">12dp</item>
-        <item name="android:layout_margin">3dp</item>
+        <item name="android:padding">4dp</item>
     </style>
 
     <style name="StatValue">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:textColor">@color/accent</item>
-        <item name="android:textSize">22sp</item>
+        <item name="android:textColor">@color/accentText</item>
+        <item name="android:textSize">24sp</item>
         <item name="android:textStyle">bold</item>
         <item name="android:fontFamily">@font/space_mono</item>
     </style>
@@ -39,5 +62,41 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textColor">@color/textMuted</item>
         <item name="android:textSize">11sp</item>
+        <item name="android:paddingTop">2dp</item>
+    </style>
+
+    <!--
+      セットアップ項目（4つの権限）の行。<Button> のままだが、
+      MaterialのContained/Outlinedデフォルトは一切継承させず、
+      アイコン+左寄せテキストの「リスト行」に見せる。
+    -->
+    <style name="SetupRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/card_background_flat</item>
+        <item name="android:gravity">center_vertical|start</item>
+        <item name="android:textColor">@color/text</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:paddingStart">14dp</item>
+        <item name="android:paddingEnd">14dp</item>
+        <item name="android:paddingTop">14dp</item>
+        <item name="android:paddingBottom">14dp</item>
+        <item name="android:drawablePadding">12dp</item>
+        <item name="android:drawableTint">@color/textMuted</item>
+        <item name="android:stateListAnimator">@null</item>
+        <item name="android:elevation">0dp</item>
+    </style>
+
+    <!-- 権限状態のピル。有効/未設定は MainActivity 側で背景・文字色を切り替える -->
+    <style name="StatusPill">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:paddingStart">10dp</item>
+        <item name="android:paddingEnd">10dp</item>
+        <item name="android:paddingTop">4dp</item>
+        <item name="android:paddingBottom">4dp</item>
     </style>
 </resources>

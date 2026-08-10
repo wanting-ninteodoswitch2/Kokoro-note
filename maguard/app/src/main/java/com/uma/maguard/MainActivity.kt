@@ -12,6 +12,7 @@ import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
@@ -119,10 +120,10 @@ class MainActivity : AppCompatActivity() {
         val batteryOk = isIgnoringBatteryOptimizations()
         val usageOk = UsageTracker(this).hasPermission()
 
-        findViewById<TextView>(R.id.accessibilityStatus).text = statusLabel(accessibilityOk)
-        findViewById<TextView>(R.id.overlayStatus).text = statusLabel(overlayOk)
-        findViewById<TextView>(R.id.batteryStatus).text = statusLabel(batteryOk)
-        findViewById<TextView>(R.id.usageStatsStatus).text = statusLabel(usageOk)
+        applyStatusPill(findViewById(R.id.accessibilityStatus), accessibilityOk)
+        applyStatusPill(findViewById(R.id.overlayStatus), overlayOk)
+        applyStatusPill(findViewById(R.id.batteryStatus), batteryOk)
+        applyStatusPill(findViewById(R.id.usageStatsStatus), usageOk)
 
         val allOk = accessibilityOk && overlayOk && usageOk
         findViewById<TextView>(R.id.setupSummary).text = if (allOk) {
@@ -132,7 +133,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun statusLabel(ok: Boolean) = if (ok) "有効" else "未設定"
+    /** 権限や対象アプリのON/OFF状態を、色付きのピルとして表示する共通処理 */
+    private fun applyStatusPill(view: TextView, ok: Boolean) {
+        view.text = if (ok) "有効" else "未設定"
+        view.setBackgroundResource(if (ok) R.drawable.status_pill_ok else R.drawable.status_pill_pending)
+        view.setTextColor(resources.getColor(if (ok) R.color.resisted else R.color.textMuted, theme))
+    }
 
     private fun isIgnoringBatteryOptimizations(): Boolean {
         val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
@@ -234,6 +240,7 @@ class MainActivity : AppCompatActivity() {
 
         entries.forEach { (packageName, label, config) ->
             val row = LayoutInflater.from(this).inflate(R.layout.item_app, container, false)
+            row.findViewById<ImageView>(R.id.appIcon).setImageDrawable(loadAppIcon(pm, packageName))
             row.findViewById<TextView>(R.id.appLabel).text = label
             row.findViewById<TextView>(R.id.appDetail).text = buildString {
                 append("${config.pauseSeconds}秒待つ / ${config.graceMinutes}分は再表示しない")
@@ -242,7 +249,7 @@ class MainActivity : AppCompatActivity() {
                 if (config.dailyLaunchLimit > 0) append(" / 1日${config.dailyLaunchLimit}回まで")
                 if (config.friction != Prefs.FrictionMode.NONE) append(" / ${config.friction.label()}")
             }
-            row.findViewById<TextView>(R.id.appToggle).text = "ON"
+            applyStatusPill(row.findViewById(R.id.appToggle), ok = true)
             row.findViewById<Button>(R.id.appSettingsButton).visibility = View.GONE
             row.setOnClickListener {
                 startActivity(Intent(this, AppPickerActivity::class.java))
@@ -250,6 +257,14 @@ class MainActivity : AppCompatActivity() {
             container.addView(row)
         }
     }
+
+    /** アプリ本来のアイコンを読み込む。取得できない場合は汎用アイコンで代替する */
+    private fun loadAppIcon(pm: PackageManager, packageName: String) =
+        try {
+            pm.getApplicationIcon(packageName)
+        } catch (e: PackageManager.NameNotFoundException) {
+            ContextCompat.getDrawable(this, R.drawable.ic_apps)
+        }
 
     /**
      * 「理由を書く」モードで入力された内容を振り返る。

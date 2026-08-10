@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  以前はこの画面の下部に「端末の全アプリ一覧」をそのまま
-  ListView で埋め込んでいたため、上の統計・セットアップ項目に
-  スクロール領域を圧迫され、一度に2〜3件しか見えない状態になっていた。
-
   対象アプリの追加・削除・詳細設定は AppPickerActivity（検索付きの
   専用画面）に分離し、この画面では「いま対象になっているアプリ」だけを
   必要なぶんだけ表示する。
+
+  カード+アイコン+ステータスピルを基調にしたレイアウト。
 -->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -24,7 +22,7 @@
             android:layout_height="wrap_content"
             android:text="ま。"
             android:textColor="@color/text"
-            android:textSize="24sp"
+            android:textSize="28sp"
             android:textStyle="bold" />
 
         <TextView
@@ -34,187 +32,214 @@
             android:textColor="@color/textMuted"
             android:textSize="13sp"
             android:paddingTop="4dp"
-            android:paddingBottom="16dp" />
+            android:paddingBottom="20dp" />
 
         <!-- 今日の記録 -->
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingBottom="16dp">
+            style="@style/CardContainer"
+            android:layout_marginBottom="16dp">
 
-            <LinearLayout style="@style/StatBox">
-                <TextView android:id="@+id/statResisted" style="@style/StatValue" />
-                <TextView style="@style/StatLabel" android:text="今日やめた" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <LinearLayout style="@style/StatBox">
+                    <TextView android:id="@+id/statResisted" style="@style/StatValue" />
+                    <TextView style="@style/StatLabel" android:text="今日やめた" />
+                </LinearLayout>
+
+                <LinearLayout style="@style/StatBox">
+                    <TextView android:id="@+id/statOpened" style="@style/StatValue" />
+                    <TextView style="@style/StatLabel" android:text="今日見た" />
+                </LinearLayout>
+
+                <LinearLayout style="@style/StatBox">
+                    <TextView android:id="@+id/statStreak" style="@style/StatValue" />
+                    <TextView style="@style/StatLabel" android:text="連続日数" />
+                </LinearLayout>
+
             </LinearLayout>
-
-            <LinearLayout style="@style/StatBox">
-                <TextView android:id="@+id/statOpened" style="@style/StatValue" />
-                <TextView style="@style/StatLabel" android:text="今日見た" />
-            </LinearLayout>
-
-            <LinearLayout style="@style/StatBox">
-                <TextView android:id="@+id/statStreak" style="@style/StatValue" />
-                <TextView style="@style/StatLabel" android:text="連続日数" />
-            </LinearLayout>
-
         </LinearLayout>
 
         <!-- 7日間グラフ -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="直近7日間"
-            android:textColor="@color/textMuted"
-            android:textSize="12sp"
-            android:paddingBottom="6dp" />
+        <LinearLayout
+            style="@style/CardContainer"
+            android:layout_marginBottom="16dp">
 
-        <com.uma.maguard.WeeklyChartView
-            android:id="@+id/weeklyChart"
-            android:layout_width="match_parent"
-            android:layout_height="120dp"
-            android:background="@color/surface"
-            android:padding="8dp" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="直近7日間"
+                android:textColor="@color/textMuted"
+                android:textSize="12sp"
+                android:paddingBottom="10dp" />
 
-        <TextView
-            android:id="@+id/activeRuleText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/accent"
-            android:textSize="12sp"
-            android:paddingTop="8dp"
-            android:visibility="gone" />
+            <com.uma.maguard.WeeklyChartView
+                android:id="@+id/weeklyChart"
+                android:layout_width="match_parent"
+                android:layout_height="110dp"
+                android:background="@drawable/card_background_flat"
+                android:padding="8dp" />
 
+            <TextView
+                android:id="@+id/activeRuleText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/accentText"
+                android:textSize="12sp"
+                android:paddingTop="10dp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- クイックアクション -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginTop="12dp">
+            android:layout_marginBottom="20dp">
 
             <Button
                 android:id="@+id/timeRulesButton"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="@null"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="6dp"
+                android:background="@drawable/card_background_flat"
+                android:gravity="center"
+                android:textColor="@color/text"
+                android:textSize="13sp"
+                android:textAllCaps="false"
+                android:paddingTop="14dp"
+                android:paddingBottom="14dp"
+                android:drawableStart="@drawable/ic_clock"
+                android:drawableTint="@color/textMuted"
+                android:drawablePadding="8dp"
                 android:text="時間帯ルール" />
 
             <Button
                 android:id="@+id/reasonsButton"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="@null"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
+                android:background="@drawable/card_background_flat"
+                android:gravity="center"
+                android:textColor="@color/text"
+                android:textSize="13sp"
+                android:textAllCaps="false"
+                android:paddingTop="14dp"
+                android:paddingBottom="14dp"
+                android:drawableStart="@drawable/ic_list"
+                android:drawableTint="@color/textMuted"
+                android:drawablePadding="8dp"
                 android:text="開いた理由" />
         </LinearLayout>
 
         <!-- セットアップ -->
-        <LinearLayout
+        <TextView
+            style="@style/SectionHeader"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <Button
-                android:id="@+id/accessibilityButton"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:text="1. アプリ検知を許可" />
-
-            <TextView
-                android:id="@+id/accessibilityStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingStart="12dp"
-                android:paddingEnd="4dp"
-                android:textColor="@color/accent"
-                android:textSize="12sp" />
-        </LinearLayout>
+            android:paddingBottom="10dp"
+            android:text="はじめに" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:orientation="vertical"
+            android:layout_marginBottom="20dp">
 
-            <Button
-                android:id="@+id/overlayButton"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_weight="1"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="2. 重ねて表示を許可" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
 
-            <TextView
-                android:id="@+id/overlayStatus"
-                android:layout_width="wrap_content"
+                <Button
+                    android:id="@+id/accessibilityButton"
+                    style="@style/SetupRow"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:drawableStart="@drawable/ic_shield"
+                    android:text="アプリ検知" />
+
+                <TextView
+                    android:id="@+id/accessibilityStatus"
+                    style="@style/StatusPill"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingStart="12dp"
-                android:paddingEnd="4dp"
-                android:textColor="@color/accent"
-                android:textSize="12sp" />
-        </LinearLayout>
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+                <Button
+                    android:id="@+id/overlayButton"
+                    style="@style/SetupRow"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:drawableStart="@drawable/ic_layers"
+                    android:text="重ねて表示" />
 
-            <Button
-                android:id="@+id/usageStatsButton"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_weight="1"
+                <TextView
+                    android:id="@+id/overlayStatus"
+                    style="@style/StatusPill"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="3. 使用状況へのアクセス" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
 
-            <TextView
-                android:id="@+id/usageStatsStatus"
-                android:layout_width="wrap_content"
+                <Button
+                    android:id="@+id/usageStatsButton"
+                    style="@style/SetupRow"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:drawableStart="@drawable/ic_bar_chart"
+                    android:text="使用状況へのアクセス" />
+
+                <TextView
+                    android:id="@+id/usageStatsStatus"
+                    style="@style/StatusPill"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingStart="12dp"
-                android:paddingEnd="4dp"
-                android:textColor="@color/accent"
-                android:textSize="12sp" />
-        </LinearLayout>
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+                <Button
+                    android:id="@+id/batteryButton"
+                    style="@style/SetupRow"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:drawableStart="@drawable/ic_battery"
+                    android:text="電池最適化を除外" />
 
-            <Button
-                android:id="@+id/batteryButton"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:text="4. 電池最適化を除外" />
-
-            <TextView
-                android:id="@+id/batteryStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingStart="12dp"
-                android:paddingEnd="4dp"
-                android:textColor="@color/accent"
-                android:textSize="12sp" />
+                <TextView
+                    android:id="@+id/batteryStatus"
+                    style="@style/StatusPill"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
         </LinearLayout>
 
         <TextView
+            style="@style/SectionHeader"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="対象アプリ"
-            android:textColor="@color/text"
-            android:textSize="16sp"
-            android:paddingTop="20dp"
-            android:paddingBottom="8dp" />
+            android:paddingBottom="10dp"
+            android:text="対象アプリ" />
 
         <!-- 対象アプリの一覧はここに実行時に追加される（MainActivity.refreshTargetApps） -->
         <LinearLayout
@@ -236,10 +261,20 @@
 
         <Button
             android:id="@+id/addAppButton"
+            style="@null"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="52dp"
             android:layout_marginTop="8dp"
-            android:text="＋ アプリを追加" />
+            android:background="@drawable/button_accent_primary"
+            android:gravity="center"
+            android:textColor="@color/bg"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textAllCaps="false"
+            android:drawableStart="@drawable/ic_add"
+            android:drawableTint="@color/bg"
+            android:drawablePadding="8dp"
+            android:text="アプリを追加" />
 
     </LinearLayout>
 </ScrollView>

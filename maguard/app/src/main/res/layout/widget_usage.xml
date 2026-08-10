@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="今日のスクリーン"
-        android:textColor="#8B90A3"
+        android:textColor="@color/textMuted"
         android:textSize="11sp" />
 
     <LinearLayout
@@ -25,7 +25,7 @@
             android:id="@+id/widgetTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#E8A659"
+            android:textColor="@color/accent"
             android:textSize="26sp"
             android:textStyle="bold"
             android:fontFamily="monospace" />
@@ -34,7 +34,7 @@
             android:id="@+id/widgetLaunches"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#8B90A3"
+            android:textColor="@color/textMuted"
             android:textSize="13sp"
             android:paddingStart="8dp"
             android:paddingBottom="4dp" />
@@ -53,7 +53,7 @@
         android:id="@+id/widgetLimitLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#8B90A3"
+        android:textColor="@color/textMuted"
         android:textSize="10sp"
         android:paddingTop="2dp" />
 
@@ -74,7 +74,7 @@
                 android:id="@+id/widgetResisted"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#6FBF8B"
+                android:textColor="@color/resisted"
                 android:textSize="15sp"
                 android:textStyle="bold"
                 android:fontFamily="monospace" />
@@ -83,7 +83,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=" やめた"
-                android:textColor="#8B90A3"
+                android:textColor="@color/textMuted"
                 android:textSize="10sp" />
         </LinearLayout>
 
@@ -98,7 +98,7 @@
                 android:id="@+id/widgetStreak"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#E8A659"
+                android:textColor="@color/accent"
                 android:textSize="15sp"
                 android:textStyle="bold"
                 android:fontFamily="monospace" />
@@ -107,7 +107,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=" 連続"
-                android:textColor="#8B90A3"
+                android:textColor="@color/textMuted"
                 android:textSize="10sp" />
         </LinearLayout>
     </LinearLayout>

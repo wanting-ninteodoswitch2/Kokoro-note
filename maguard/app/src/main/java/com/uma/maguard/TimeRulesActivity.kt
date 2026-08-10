@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.Button
 import android.widget.CheckBox
+import android.widget.ImageView
 import android.widget.ListView
 import android.widget.SeekBar
 import android.widget.TextView
@@ -38,6 +39,8 @@ class TimeRulesActivity : AppCompatActivity() {
 
         adapter = RuleAdapter()
         findViewById<ListView>(R.id.ruleListView).adapter = adapter
+
+        findViewById<ImageView>(R.id.backButton).setOnClickListener { finish() }
 
         findViewById<Button>(R.id.addRuleButton).setOnClickListener {
             showRuleDialog(null)

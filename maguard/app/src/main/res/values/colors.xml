@@ -1,7 +1,23 @@
 <resources>
-    <color name="bg">#14171F</color>
-    <color name="surface">#1C202C</color>
-    <color name="text">#EDEDF2</color>
-    <color name="textMuted">#8B90A3</color>
+    <!--
+      既定（ライトモード）の配色。
+      values-night/colors.xml に同名の色をダークモード用として定義しており、
+      OSの設定（端末のダークモード切り替え）に応じて自動的に切り替わる。
+    -->
+    <color name="bg">#F4F5F9</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surfaceAlt">#EEF0F6</color>
+    <color name="text">#1C1F2A</color>
+    <color name="textMuted">#6B7086</color>
+    <color name="border">#E3E5EE</color>
+
+    <!-- ブランドのアクセントカラー自体はモード間で統一。
+         accentText は白背景でも読める濃さにした文字・アイコン用の変種 -->
     <color name="accent">#E8A659</color>
+    <color name="accentText">#B8722A</color>
+
+    <color name="resisted">#2F9E68</color>
+
+    <!-- 一時停止画面の背景に敷く半透明スクリム -->
+    <color name="overlayScrim">#F2F4F5F9</color>
 </resources>
