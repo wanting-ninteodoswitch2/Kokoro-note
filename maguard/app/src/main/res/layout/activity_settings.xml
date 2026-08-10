@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  4つの権限（アプリ検知・重ねて表示・使用状況・電池最適化）を確認・変更する画面。
+
+  以前はメイン画面に常時表示していたが、一度全部そろえたユーザーには
+  もう用がない情報をずっと見せ続けるのはノイズでしかない。
+  ここに切り出し、メイン画面には未設定のものがあるときだけ
+  バナーで案内する形にした。
+-->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="12dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="12dp">
+
+            <ImageView
+                android:id="@+id/backButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="9dp"
+                android:src="@drawable/ic_back"
+                android:tint="@color/text"
+                android:contentDescription="@null"
+                android:background="?android:attr/selectableItemBackground" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="設定"
+                android:textColor="@color/text"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:id="@+id/setupSummary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/textMuted"
+                android:textSize="13sp"
+                android:paddingBottom="16dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <Button
+                    android:id="@+id/accessibilityButton"
+                    style="@style/SetupRow"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:drawableStart="@drawable/ic_shield"
+                    android:text="アプリ検知" />
+
+                <TextView
+                    android:id="@+id/accessibilityStatus"
+                    style="@style/StatusPill"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <Button
+                    android:id="@+id/overlayButton"
+                    style="@style/SetupRow"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:drawableStart="@drawable/ic_layers"
+                    android:text="重ねて表示" />
+
+                <TextView
+                    android:id="@+id/overlayStatus"
+                    style="@style/StatusPill"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <Button
+                    android:id="@+id/usageStatsButton"
+                    style="@style/SetupRow"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:drawableStart="@drawable/ic_bar_chart"
+                    android:text="使用状況へのアクセス" />
+
+                <TextView
+                    android:id="@+id/usageStatsStatus"
+                    style="@style/StatusPill"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <Button
+                    android:id="@+id/batteryButton"
+                    style="@style/SetupRow"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:drawableStart="@drawable/ic_battery"
+                    android:text="電池最適化を除外" />
+
+                <TextView
+                    android:id="@+id/batteryStatus"
+                    style="@style/StatusPill"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

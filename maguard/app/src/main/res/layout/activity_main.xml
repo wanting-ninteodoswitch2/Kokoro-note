@@ -17,13 +17,34 @@
         android:orientation="vertical"
         android:padding="20dp">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="ま。"
-            android:textColor="@color/text"
-            android:textSize="28sp"
-            android:textStyle="bold" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="ま。"
+                android:textColor="@color/text"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+            <!-- 4つの権限はここから開く設定画面に移した。
+                 すべて揃っている間は普段見る必要がないため、
+                 メイン画面には常時この歯車アイコンだけを置く -->
+            <ImageView
+                android:id="@+id/settingsButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="9dp"
+                android:src="@drawable/ic_tune"
+                android:tint="@color/textMuted"
+                android:contentDescription="@null"
+                android:background="?android:attr/selectableItemBackground" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/setupSummary"
@@ -32,7 +53,48 @@
             android:textColor="@color/textMuted"
             android:textSize="13sp"
             android:paddingTop="4dp"
-            android:paddingBottom="20dp" />
+            android:paddingBottom="16dp" />
+
+        <!--
+          未設定の項目が残っている間だけ表示するバナー。
+          全部そろったら MainActivity.refreshStatus が visibility=gone にする。
+        -->
+        <LinearLayout
+            android:id="@+id/setupBanner"
+            style="@style/CardContainer"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="動作に必要な設定が残っています"
+                android:textColor="@color/text"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="アプリ検知・重ねて表示・使用状況へのアクセスをオンにしてください"
+                android:textColor="@color/textMuted"
+                android:textSize="12sp"
+                android:paddingTop="4dp"
+                android:paddingBottom="14dp" />
+
+            <Button
+                android:id="@+id/openSettingsButton"
+                style="@null"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:background="@drawable/button_accent_primary"
+                android:gravity="center"
+                android:textColor="@color/bg"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textAllCaps="false"
+                android:text="設定を開く" />
+        </LinearLayout>
 
         <!-- 今日の記録 -->
         <LinearLayout
@@ -136,103 +198,6 @@
                 android:drawableTint="@color/textMuted"
                 android:drawablePadding="8dp"
                 android:text="開いた理由" />
-        </LinearLayout>
-
-        <!-- セットアップ -->
-        <TextView
-            style="@style/SectionHeader"
-            android:layout_width="match_parent"
-            android:paddingBottom="10dp"
-            android:text="はじめに" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="20dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="8dp">
-
-                <Button
-                    android:id="@+id/accessibilityButton"
-                    style="@style/SetupRow"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:drawableStart="@drawable/ic_shield"
-                    android:text="アプリ検知" />
-
-                <TextView
-                    android:id="@+id/accessibilityStatus"
-                    style="@style/StatusPill"
-                    android:layout_marginStart="8dp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="8dp">
-
-                <Button
-                    android:id="@+id/overlayButton"
-                    style="@style/SetupRow"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:drawableStart="@drawable/ic_layers"
-                    android:text="重ねて表示" />
-
-                <TextView
-                    android:id="@+id/overlayStatus"
-                    style="@style/StatusPill"
-                    android:layout_marginStart="8dp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="8dp">
-
-                <Button
-                    android:id="@+id/usageStatsButton"
-                    style="@style/SetupRow"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:drawableStart="@drawable/ic_bar_chart"
-                    android:text="使用状況へのアクセス" />
-
-                <TextView
-                    android:id="@+id/usageStatsStatus"
-                    style="@style/StatusPill"
-                    android:layout_marginStart="8dp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <Button
-                    android:id="@+id/batteryButton"
-                    style="@style/SetupRow"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:drawableStart="@drawable/ic_battery"
-                    android:text="電池最適化を除外" />
-
-                <TextView
-                    android:id="@+id/batteryStatus"
-                    style="@style/StatusPill"
-                    android:layout_marginStart="8dp" />
-            </LinearLayout>
         </LinearLayout>
 
         <TextView
