@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  対象アプリを追加・削除・設定するための専用画面。
+
+  以前はこの一覧をメイン画面に直接埋め込んでいたため、上部の統計・
+  セットアップ項目にスクロール領域を圧迫され、一度に2〜3件しか
+  見えない状態になっていた。ここを独立した画面にして、検索もできる
+  ようにする。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/bg">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="12dp">
+
+        <ImageView
+            android:id="@+id/backButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="9dp"
+            android:src="@drawable/ic_back"
+            android:tint="@color/text"
+            android:contentDescription="@null"
+            android:background="?android:attr/selectableItemBackground" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="アプリを追加"
+            android:textColor="@color/text"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:gravity="center" />
+
+        <!-- 戻るボタンと横幅を揃えて、タイトルが見た目上中央に来るようにする -->
+        <View
+            android:layout_width="40dp"
+            android:layout_height="1dp" />
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="12dp">
+
+        <ImageView
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_gravity="start|center_vertical"
+            android:layout_marginStart="14dp"
+            android:src="@drawable/ic_search"
+            android:tint="@color/textMuted"
+            android:contentDescription="@null" />
+
+        <EditText
+            android:id="@+id/searchInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="検索"
+            android:inputType="text"
+            android:maxLines="1"
+            android:background="@drawable/card_background_flat"
+            android:textColor="@color/text"
+            android:textColorHint="@color/textMuted"
+            android:paddingStart="42dp"
+            android:paddingEnd="14dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:importantForAutofill="no" />
+    </FrameLayout>
+
+    <ListView
+        android:id="@+id/pickerListView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:divider="@null"
+        android:dividerHeight="0dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp" />
+
+</LinearLayout>

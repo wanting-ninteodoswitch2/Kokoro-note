@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  対象アプリの追加・削除・詳細設定は AppPickerActivity（検索付きの
+  専用画面）に分離し、この画面では「いま対象になっているアプリ」だけを
+  必要なぶんだけ表示する。
+
+  カード+アイコン+ステータスピルを基調にしたレイアウト。
+-->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="ま。"
+                android:textColor="@color/text"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+            <!-- 4つの権限はここから開く設定画面に移した。
+                 すべて揃っている間は普段見る必要がないため、
+                 メイン画面には常時この歯車アイコンだけを置く -->
+            <ImageView
+                android:id="@+id/settingsButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="9dp"
+                android:src="@drawable/ic_tune"
+                android:tint="@color/textMuted"
+                android:contentDescription="@null"
+                android:background="?android:attr/selectableItemBackground" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/setupSummary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textMuted"
+            android:textSize="13sp"
+            android:paddingTop="4dp"
+            android:paddingBottom="16dp" />
+
+        <!--
+          未設定の項目が残っている間だけ表示するバナー。
+          全部そろったら MainActivity.refreshStatus が visibility=gone にする。
+        -->
+        <LinearLayout
+            android:id="@+id/setupBanner"
+            style="@style/CardContainer"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="動作に必要な設定が残っています"
+                android:textColor="@color/text"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="アプリ検知・重ねて表示・使用状況へのアクセスをオンにしてください"
+                android:textColor="@color/textMuted"
+                android:textSize="12sp"
+                android:paddingTop="4dp"
+                android:paddingBottom="14dp" />
+
+            <Button
+                android:id="@+id/openSettingsButton"
+                style="@null"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:background="@drawable/button_accent_primary"
+                android:gravity="center"
+                android:textColor="@color/bg"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textAllCaps="false"
+                android:text="設定を開く" />
+        </LinearLayout>
+
+        <!--
+          今日の記録。参考画像の「サマリー」カードに合わせて、
+          白カードの並びの中で主役になるグラデーションカードにしている。
+          文字は白固定（StatValue/StatLabel のテーマ依存色は使わない）。
+        -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/home_summary_gradient"
+            android:padding="20dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="今日の記録"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:paddingBottom="14dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <LinearLayout style="@style/StatBox">
+                    <TextView
+                        android:id="@+id/statResisted"
+                        style="@style/StatValue"
+                        android:textColor="#FFFFFF" />
+                    <TextView
+                        style="@style/StatLabel"
+                        android:textColor="#C2FFFFFF"
+                        android:text="今日やめた" />
+                </LinearLayout>
+
+                <LinearLayout style="@style/StatBox">
+                    <TextView
+                        android:id="@+id/statOpened"
+                        style="@style/StatValue"
+                        android:textColor="#FFFFFF" />
+                    <TextView
+                        style="@style/StatLabel"
+                        android:textColor="#C2FFFFFF"
+                        android:text="今日見た" />
+                </LinearLayout>
+
+                <LinearLayout style="@style/StatBox">
+                    <TextView
+                        android:id="@+id/statStreak"
+                        style="@style/StatValue"
+                        android:textColor="#FFFFFF" />
+                    <TextView
+                        style="@style/StatLabel"
+                        android:textColor="#C2FFFFFF"
+                        android:text="連続日数" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 7日間グラフ -->
+        <LinearLayout
+            style="@style/CardContainer"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="直近7日間"
+                android:textColor="@color/textMuted"
+                android:textSize="12sp"
+                android:paddingBottom="10dp" />
+
+            <com.uma.maguard.WeeklyChartView
+                android:id="@+id/weeklyChart"
+                android:layout_width="match_parent"
+                android:layout_height="110dp"
+                android:background="@drawable/card_background_flat"
+                android:padding="8dp" />
+
+            <TextView
+                android:id="@+id/activeRuleText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/accentText"
+                android:textSize="12sp"
+                android:paddingTop="10dp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- クイックアクション -->
+        <Button
+            android:id="@+id/timeRulesButton"
+            style="@null"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/card_background_flat"
+            android:gravity="center"
+            android:textColor="@color/text"
+            android:textSize="13sp"
+            android:textAllCaps="false"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp"
+            android:drawableStart="@drawable/ic_clock"
+            android:drawableTint="@color/textMuted"
+            android:drawablePadding="8dp"
+            android:text="時間帯ルール" />
+
+        <TextView
+            style="@style/SectionHeader"
+            android:layout_width="match_parent"
+            android:paddingBottom="10dp"
+            android:text="対象アプリ" />
+
+        <TextView
+            android:id="@+id/emptyTargetsText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="まだ対象アプリがありません。「追加」タイルから選んでください。"
+            android:textColor="@color/textMuted"
+            android:textSize="13sp"
+            android:paddingBottom="10dp"
+            android:visibility="gone" />
+
+        <!--
+          対象アプリは2列のグリッドで並べる（参考画像に合わせた形）。
+          行ごとの横並び LinearLayout はここに実行時に追加される
+          （MainActivity.refreshTargetApps）。「追加」タイルは常に
+          最後のセルとして一緒に並ぶので、専用の追加ボタンはもう置かない。
+        -->
+        <LinearLayout
+            android:id="@+id/targetAppsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+    </LinearLayout>
+</ScrollView>

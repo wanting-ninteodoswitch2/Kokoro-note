@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 12 以降のバックアップ/転送ルール。
+  allowBackup="false" と併せて、クラウドバックアップも
+  端末間転送も対象外にする。
+
+  どのアプリをいつ・何回開いたかの記録は、その人が何に依存しているかが
+  読み取れてしまう類の記録なので、端末の外に出さない方針にしている。
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" path="." />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="." />
+    </device-transfer>
+</data-extraction-rules>

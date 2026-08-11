@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- カード内の入れ子要素（行）用。外枠は付けず、背景色の違いだけで区切る -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/surfaceAlt" />
+    <corners android:radius="12dp" />
+</shape>

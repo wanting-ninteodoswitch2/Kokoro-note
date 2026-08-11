@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  対象アプリカードの背景。塗り色はプレースホルダーで、実際は
+  MainActivity.applyDynamicCardColor がアプリアイコンから抽出した色に
+  実行時に差し替える（GradientDrawable なので setColor() で塗り替えられる）。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/appCardFallback" />
+    <corners android:radius="18dp" />
+</shape>

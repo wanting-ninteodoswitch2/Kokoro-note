@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@drawable/card_background_flat"
+    android:padding="12dp"
+    android:layout_marginBottom="8dp">
+
+    <!-- 端末にインストールされているアプリ本来のアイコン。
+         取得に失敗した場合は AppInfo 側で ic_apps にフォールバックする -->
+    <ImageView
+        android:id="@+id/appIcon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="12dp"
+        android:scaleType="centerInside"
+        android:contentDescription="@null" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/appLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/appDetail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textMuted"
+            android:textSize="11sp"
+            android:paddingTop="2dp" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/appSettingsButton"
+        style="@null"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
+        android:background="?android:attr/selectableItemBackground"
+        android:textColor="@color/accentText"
+        android:textSize="12sp"
+        android:textAllCaps="false"
+        android:text="設定" />
+
+    <TextView
+        android:id="@+id/appToggle"
+        style="@style/StatusPill"
+        android:layout_marginStart="8dp" />
+
+</LinearLayout>

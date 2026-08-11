@@ -1,0 +1,33 @@
+<resources>
+    <!-- ダークモード用の配色。トークン名は values/colors.xml と揃えてあり、
+         OSがダークモードのときはこちらが自動的に使われる。 -->
+    <color name="bg">#14171F</color>
+    <color name="surface">#1C202C</color>
+    <color name="surfaceAlt">#232838</color>
+    <color name="text">#EDEDF2</color>
+    <color name="textMuted">#8B90A3</color>
+    <color name="border">#2C3142</color>
+
+    <!-- ライト側と同じ理由で、ダークモードも青〜青緑系のアクセントにする。
+         暗い背景の上では彩度を少し上げ、明るさも足さないと沈んで見えるため
+         ライト側の値そのままは使わず、別値にしている -->
+    <color name="accent">#7BA9C4</color>
+    <color name="accentText">#92C5DE</color>
+
+    <color name="resisted">#6FBF8B</color>
+
+    <color name="chartTrack">#333A4E</color>
+
+    <!-- 一時停止画面のグラデーション。ダークモードでは下側も明るいラベンダーまで
+         振り切らず、藍〜紫の範囲に留めて他画面の暗い基調から浮かないようにする -->
+    <color name="pauseGradientTop">#1C1A2E</color>
+    <color name="pauseGradientMid">#2E2B52</color>
+    <color name="pauseGradientBottom">#46406E</color>
+
+    <color name="pauseAccent">#6C63F0</color>
+
+    <color name="homeSummaryGradientStart">#35566A</color>
+    <color name="homeSummaryGradientEnd">#262E4D</color>
+
+    <color name="appCardFallback">#35566A</color>
+</resources>

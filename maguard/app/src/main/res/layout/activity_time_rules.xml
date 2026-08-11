@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/bg">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="4dp">
+
+        <ImageView
+            android:id="@+id/backButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="9dp"
+            android:src="@drawable/ic_back"
+            android:tint="@color/text"
+            android:contentDescription="@null"
+            android:background="?android:attr/selectableItemBackground" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:text="時間帯ルール"
+            android:textColor="@color/text"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="時間帯ごとに、待つ長さを変えたり完全に開かないようにできます"
+            android:textColor="@color/textMuted"
+            android:textSize="13sp"
+            android:paddingBottom="16dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/presetButton"
+                style="@null"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/card_background_flat"
+                android:gravity="center"
+                android:textColor="@color/text"
+                android:textSize="13sp"
+                android:textAllCaps="false"
+                android:paddingTop="14dp"
+                android:paddingBottom="14dp"
+                android:drawableStart="@drawable/ic_clock"
+                android:drawableTint="@color/textMuted"
+                android:drawablePadding="8dp"
+                android:text="プリセットから" />
+
+            <Button
+                android:id="@+id/addRuleButton"
+                style="@null"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/button_accent_primary"
+                android:gravity="center"
+                android:textColor="@color/bg"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textAllCaps="false"
+                android:paddingTop="14dp"
+                android:paddingBottom="14dp"
+                android:drawableStart="@drawable/ic_add"
+                android:drawableTint="@color/bg"
+                android:drawablePadding="8dp"
+                android:text="自分で作る" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/emptyText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="まだルールがありません。\nまずはプリセットから試してみるといいかもしれません。"
+        android:textColor="@color/textMuted"
+        android:textSize="13sp"
+        android:gravity="center"
+        android:paddingTop="20dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp" />
+
+    <ListView
+        android:id="@+id/ruleListView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:divider="@null"
+        android:dividerHeight="0dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp" />
+
+</LinearLayout>

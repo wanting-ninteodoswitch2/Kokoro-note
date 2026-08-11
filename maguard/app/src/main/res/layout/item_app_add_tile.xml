@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 対象アプリグリッドの最後に常に置く「追加」タイル。他のカードと大きさを揃える -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_weight="1"
+    android:minHeight="104dp"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@drawable/card_background_flat"
+    android:padding="16dp">
+
+    <ImageView
+        android:layout_width="26dp"
+        android:layout_height="26dp"
+        android:src="@drawable/ic_add"
+        android:tint="@color/textMuted"
+        android:contentDescription="@null" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="追加"
+        android:textColor="@color/textMuted"
+        android:textSize="13sp"
+        android:textStyle="bold" />
+
+</LinearLayout>

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!--
+      端末にインストールされている全アプリの一覧を取得するための権限。
+      Android 11以降、これを宣言しないと自分のアプリしか見えない。
+    -->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
+
+    <!--
+      他のアプリの上に重ねて表示する権限。
+      オーバーレイ方式の一時停止画面を出すために必須。
+      危険な権限とみなされるため、宣言するだけでは足りず、
+      ユーザーが設定画面で手動で許可する必要がある。
+    -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <!-- 電池最適化の除外を案内するために必要 -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+
+    <!--
+      実際の使用時間を OS の利用ログから読むための権限。
+      通常の権限ダイアログでは付与できず、専用の設定画面での許可が必要。
+    -->
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
+
+    <!--
+      Doze中でも正確な時刻にチェックを走らせるため。
+      Android 12以降で必要。
+    -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+
+    <!-- 端末再起動後もアラームを復元するため -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!--
+      Android 8以降、バックグラウンドから通常のサービスは起動できない。
+      オーバーレイ表示はアラーム経由（＝バックグラウンド）でも起動する必要が
+      あるため、フォアグラウンドサービスとして動かす。
+    -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!--
+      allowBackup を false にしている理由：
+
+      このアプリは、どのアプリをいつ・何回開いたか、何分やめられずに
+      いたか、といった記録を端末内に保存する。これは かなり私的な
+      記録になり得る（何に依存しているか、どんな時間帯に手が伸びるか、
+      といったことが読み取れてしまう）。
+
+      true のままだと Google のクラウドバックアップに同期され、
+      adb backup でも取り出せる状態になる。
+      端末の中だけで完結させたいので、明示的に無効化する。
+
+      同じ理由で、このアプリはインターネット権限を一切持っていない。
+      記録したデータを外部へ送る手段が物理的に存在しない。
+    -->
+    <application
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:icon="@android:drawable/sym_def_app_icon"
+        android:label="@string/app_name"
+        android:theme="@style/Theme.MaGuard">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".TimeRulesActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".AppPickerActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
+
+        <service
+            android:name=".OverlayService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Displaying a full-screen mindful pause over a selected app" />
+        </service>
+
+        <receiver
+            android:name=".UsageAlarmScheduler$UsageAlarmReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name=".BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
+        <!--
+          ウィジェットのレシーバーはシステムから APPWIDGET_UPDATE を
+          受け取る必要があるため exported="true" が必須。
+          false のままだとウィジェット一覧に出ず、更新も届かない。
+        -->
+        <receiver
+            android:name=".UsageWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info" />
+        </receiver>
+
+        <service
+            android:name=".MaAccessibilityService"
+            android:exported="false"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
+    </application>
+</manifest>

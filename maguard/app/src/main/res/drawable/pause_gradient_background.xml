@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  一時停止画面の背景。上を暗めの藍色、下を淡いラベンダーにしたグラデーション。
+  完全不透明な色だけで構成しているので、後ろの元アプリが透けることはない。
+  angle=270 で「開始色(pauseGradientTop)が上、終了色(pauseGradientBottom)が下」になる。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:type="linear"
+        android:angle="270"
+        android:startColor="@color/pauseGradientTop"
+        android:centerColor="@color/pauseGradientMid"
+        android:endColor="@color/pauseGradientBottom" />
+</shape>

@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@drawable/pause_gradient_background"
+    android:padding="32dp">
+
+    <!--
+      headlineText を一番目立つ「見出し」として太字・大きめにしている。
+      グラデーションの上〜中間（暗い部分）に位置するので、白文字で確実に読める。
+    -->
+    <TextView
+        android:id="@+id/headlineText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/pauseTextOnGradient"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:gravity="center" />
+
+    <TextView
+        android:id="@+id/ruleText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/pauseTextMutedOnGradient"
+        android:textSize="12sp"
+        android:paddingTop="6dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/factText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/pauseTextOnGradient"
+        android:textSize="15sp"
+        android:paddingTop="10dp"
+        android:visibility="gone" />
+
+    <!--
+      呼吸アニメーションの中央にカウントダウンを重ねる。
+      FrameLayout を使うと子要素を重ねて配置できる。
+    -->
+    <FrameLayout
+        android:id="@+id/breathContainer"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        android:layout_marginTop="20dp">
+
+        <com.uma.maguard.BreathingView
+            android:id="@+id/breathingView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <TextView
+            android:id="@+id/countdownText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textColor="@color/pauseTextOnGradient"
+            android:textSize="44sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/space_mono" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/questionGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingTop="24dp">
+
+        <TextView
+            android:id="@+id/questionText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/pauseTextOnGradient"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:paddingBottom="20dp" />
+
+        <!-- 摩擦の仕掛け（長押しの進捗 / 書き写し） -->
+        <LinearLayout
+            android:id="@+id/frictionGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone"
+            android:paddingBottom="16dp">
+
+            <!--
+              frictionPrompt はグラデーションの中〜下寄りに来ることがあるため、
+              背景色に依存しないチップにして、どの位置でも確実に読めるようにする。
+            -->
+            <TextView
+                android:id="@+id/frictionPrompt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/pauseChipText"
+                android:textSize="13sp"
+                android:gravity="center"
+                android:background="@drawable/pause_chip_background"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:layout_marginBottom="12dp" />
+
+            <!--
+              入力欄はグラデーションから独立した明色カードにする。
+              背景の位置によらず常に読める、確実な選択。
+            -->
+            <EditText
+                android:id="@+id/frictionInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/pauseInputText"
+                android:textColorHint="@color/pauseInputHint"
+                android:textSize="15sp"
+                android:background="@drawable/pause_input_background"
+                android:padding="14dp"
+                android:inputType="text"
+                android:maxLines="3"
+                android:importantForAutofill="no"
+                android:visibility="gone" />
+
+            <ProgressBar
+                android:id="@+id/frictionProgress"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="220dp"
+                android:layout_height="6dp"
+                android:max="100"
+                android:progress="0"
+                android:progressTint="@color/pauseAccent"
+                android:progressBackgroundTint="@color/pauseChipBackground"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+        <!--
+          ＜「やめておく」を大きく、「見る」を小さくしている理由＞
+          PNAS の研究（Grüning et al., 2023）で最も効果が大きいとされた
+          「離脱の選択肢」を、見た目でも最優先にする。
+          参考にしたアプリ（one sec）では両方のボタンが待ち時間の間ずっと
+          無効化されているが、ここではその挙動は踏襲していない。
+          「やめておく」を待たせるのは離脱側にまで摩擦をかけることになり、
+          上記の研究結果と逆行するため、これまで通り即座に押せるままにする。
+          変えたのは見た目だけで、塗りつぶしのピル型ボタンにして
+          グラデーション背景の上でも確実に視認できるようにしている。
+        -->
+        <Button
+            android:id="@+id/cancelButton"
+            style="@null"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/button_pause_primary"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:textColor="@color/pauseAccentText"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textAllCaps="false" />
+
+        <!--
+          「見る」は選ぶハードルを上げたいので、あえて控えめな見た目にする。
+          ただし透明な背景のままだと、グラデーションが淡い位置に来たときに
+          文字色とのコントラストが不足する場合があるため、
+          半透明の白チップの上に乗せて、背景色によらず確実に読めるようにする。
+        -->
+        <Button
+            android:id="@+id/openButton"
+            style="@null"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="48dp"
+            android:minHeight="48dp"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:background="@drawable/pause_chip_background"
+            android:textColor="@color/pauseChipText"
+            android:textSize="14sp"
+            android:textAllCaps="false" />
+
+    </LinearLayout>
+
+</LinearLayout>

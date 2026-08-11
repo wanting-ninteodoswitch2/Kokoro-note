@@ -1,0 +1,77 @@
+<resources>
+    <!--
+      既定（ライトモード）の配色。
+      values-night/colors.xml に同名の色をダークモード用として定義しており、
+      OSの設定（端末のダークモード切り替え）に応じて自動的に切り替わる。
+    -->
+    <color name="bg">#F4F5F9</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surfaceAlt">#EEF0F6</color>
+    <color name="text">#1C1F2A</color>
+    <color name="textMuted">#6B7086</color>
+    <color name="border">#E3E5EE</color>
+
+    <!--
+      アクセントカラーは以前オレンジ系だったが、瞑想・マインドフルネス系の
+      アプリでは青〜青緑系が定番になっている。暖色（特に赤〜オレンジ）は
+      興奮・緊急性を連想させ交感神経を刺激する一方、寒色の青系は
+      心拍数や血圧を落ち着かせる方向に働くとされる（色彩心理でいう
+      warm=覚醒、cool=鎮静の対比）。「ひと呼吸」置く場面の色として、
+      ここでは落ち着いた青灰色（スレートブルー）を採用する。
+      accentText は白背景でも読める濃さにした文字・アイコン用の変種 -->
+    <color name="accent">#5C88A6</color>
+    <color name="accentText">#3D6480</color>
+
+    <color name="resisted">#2F9E68</color>
+
+    <!-- 7日間グラフの「見た回数（薄い方）」バー用。accent とは別に、
+         背景に対してほどよく視認できる中間トーンが必要なので専用トークンにする -->
+    <color name="chartTrack">#D7DEE8</color>
+
+    <!--
+      一時停止画面専用の配色。
+      参考動画（瞑想系アプリ「one sec」）に合わせて、通常画面の accent（青）とは
+      別系統の、藍〜ラベンダーのグラデーションにする。一時停止画面だけ特別に
+      「静かな場所に切り替わった」感覚を出すのが狙いなので、他画面のトークンとは
+      あえて独立させている。
+      グラデーションは上ほど暗い藍色、下ほど淡いラベンダーにし、文字は
+      画面の大半を占める暗めの上〜中間部分でも読めるよう白系で統一する。
+      ボタン・入力欄など「自前の背景を持つ部品」は、グラデーションのどの位置に
+      来ても確実に読めるよう不透明なチップ/カードにしている。
+    -->
+    <color name="pauseGradientTop">#4A4770</color>
+    <color name="pauseGradientMid">#5C58A0</color>
+    <color name="pauseGradientBottom">#D9D6F5</color>
+
+    <!-- 「やめておく」ボタンの塗り色。押せる状態を示す濃い藍色 -->
+    <color name="pauseAccent">#4F46E5</color>
+    <color name="pauseAccentText">#FFFFFF</color>
+
+    <color name="pauseTextOnGradient">#FFFFFF</color>
+    <color name="pauseTextMutedOnGradient">#D9D6F5</color>
+
+    <!-- 「見る」リンクや摩擦のラベルなど、控えめな部品用の半透明白チップ -->
+    <color name="pauseChipBackground">#33FFFFFF</color>
+    <color name="pauseChipText">#FFFFFF</color>
+
+    <!-- 書き写す入力欄。グラデーションのどこに来ても読めるよう、独立した明色カードにする -->
+    <color name="pauseInputBackground">#F6F5FC</color>
+    <color name="pauseInputText">#2A2740</color>
+    <color name="pauseInputHint">#9B96B8</color>
+    <!-- 「書き写す」摩擦で、入力中の文字が対象の文章と食い違ったときの表示色。
+         入力欄は常に明色カードなので、テーマに関わらずこの1色で足りる -->
+    <color name="pauseInputError">#C0392B</color>
+
+    <!--
+      ホーム画面の「今日の記録」カード用グラデーション。
+      参考画像（one sec のホーム画面）にある、統計をまとめて見せる
+      グラデーションカードに寄せたもの。一時停止画面の藍〜紫とは別系統にし、
+      あくまで通常画面のアクセント（青）の延長線上の色にしてある。
+    -->
+    <color name="homeSummaryGradientStart">#4A7590</color>
+    <color name="homeSummaryGradientEnd">#3D4E78</color>
+
+    <!-- 対象アプリのカードは、アプリアイコンから抽出した色を背景に敷く
+         （MainActivity.extractCardColor）。抽出に失敗した場合のフォールバック -->
+    <color name="appCardFallback">#4A7590</color>
+</resources>

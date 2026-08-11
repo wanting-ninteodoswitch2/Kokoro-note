@@ -1,0 +1,56 @@
+name: Build maguard APK
+
+on:
+  push:
+    branches:
+      - '**'
+    paths:
+      - 'maguard/**'
+      - '.github/workflows/build-maguard.yml'
+  pull_request:
+    paths:
+      - 'maguard/**'
+      - '.github/workflows/build-maguard.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: maguard
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Run unit tests
+        run: ./gradlew testDebugUnitTest --stacktrace
+
+      - name: Build debug APK
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Upload debug APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maguard-debug-apk
+          path: maguard/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maguard-test-results
+          path: maguard/app/build/reports/tests/
+          if-no-files-found: ignore
