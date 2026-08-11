@@ -367,8 +367,11 @@ class OverlayService : Service() {
      */
     private fun unlockAndOpen(packageName: String, config: Prefs.AppConfig, mode: String) {
         val graceMinutes = if (mode == MODE_USAGE) {
-            // 「もう少しだけ」を選んだ直後に起動時の介入が出ないよう、短めに抑える
-            (config.usageLimitMin / 2).coerceAtLeast(1)
+            // 「もう少しだけ」を選んだ直後に起動時の介入が出ないよう抑える。
+            // 以前は設定した分数の半分にしていたが、ユーザーから
+            // 「常に同じ間隔（設定した分数）で繰り返してほしい」という
+            // フィードバックがあり、次のチェックと揃えて同じ長さにする。
+            config.usageLimitMin.coerceAtLeast(1)
         } else {
             config.graceMinutes
         }
@@ -377,8 +380,11 @@ class OverlayService : Service() {
         if (config.usageLimitMin > 0) {
             val session = UsageTracker(this).getCurrentSessionMinutes(packageName)
             if (mode == MODE_USAGE) {
-                // 「もう少しだけ」→ 今の時点から、上限の半分だけ延長する
-                val extra = (config.usageLimitMin / 2).coerceAtLeast(1)
+                // 「もう少しだけ」→ 次も同じ間隔（usageLimitMin分後）で再確認する。
+                // 半分に短縮していた以前の挙動だと、続ければ続けるほど
+                // 間隔がどんどん短くなっていき、「毎回15分ごと」という
+                // 一定間隔の期待と食い違っていた。
+                val extra = config.usageLimitMin.coerceAtLeast(1)
                 UsageAlarmScheduler.schedule(
                     context = this,
                     packageName = packageName,
