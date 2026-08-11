@@ -11,13 +11,29 @@
     <color name="textMuted">#6B7086</color>
     <color name="border">#E3E5EE</color>
 
-    <!-- ブランドのアクセントカラー自体はモード間で統一。
-         accentText は白背景でも読める濃さにした文字・アイコン用の変種 -->
-    <color name="accent">#E8A659</color>
-    <color name="accentText">#B8722A</color>
+    <!--
+      アクセントカラーは以前オレンジ系だったが、瞑想・マインドフルネス系の
+      アプリでは青〜青緑系が定番になっている。暖色（特に赤〜オレンジ）は
+      興奮・緊急性を連想させ交感神経を刺激する一方、寒色の青系は
+      心拍数や血圧を落ち着かせる方向に働くとされる（色彩心理でいう
+      warm=覚醒、cool=鎮静の対比）。「ひと呼吸」置く場面の色として、
+      ここでは落ち着いた青灰色（スレートブルー）を採用する。
+      accentText は白背景でも読める濃さにした文字・アイコン用の変種 -->
+    <color name="accent">#5C88A6</color>
+    <color name="accentText">#3D6480</color>
 
     <color name="resisted">#2F9E68</color>
 
-    <!-- 一時停止画面の背景に敷く半透明スクリム -->
-    <color name="overlayScrim">#F2F4F5F9</color>
+    <!--
+      一時停止画面の背景。以前は半透明（アルファ F2）で、実機で見ると
+      後ろの元のアプリ画面がうっすら透けて動いて見え、気が散る原因になった。
+      「間を取る」ための画面なので、後ろを完全に覆う不透明色にする。
+      通常画面の bg とは少し色味を変え、青みを強めた落ち着いた色にして
+      「瞑想の場」として画面が切り替わったことを感じさせる。
+    -->
+    <color name="overlayScrim">#FFEEF3F7</color>
+
+    <!-- 7日間グラフの「見た回数（薄い方）」バー用。accent とは別に、
+         背景に対してほどよく視認できる中間トーンが必要なので専用トークンにする -->
+    <color name="chartTrack">#D7DEE8</color>
 </resources>

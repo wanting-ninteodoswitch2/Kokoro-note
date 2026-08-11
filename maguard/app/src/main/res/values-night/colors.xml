@@ -8,10 +8,17 @@
     <color name="textMuted">#8B90A3</color>
     <color name="border">#2C3142</color>
 
-    <color name="accent">#E8A659</color>
-    <color name="accentText">#E8A659</color>
+    <!-- ライト側と同じ理由で、ダークモードも青〜青緑系のアクセントにする。
+         暗い背景の上では彩度を少し上げ、明るさも足さないと沈んで見えるため
+         ライト側の値そのままは使わず、別値にしている -->
+    <color name="accent">#7BA9C4</color>
+    <color name="accentText">#92C5DE</color>
 
     <color name="resisted">#6FBF8B</color>
 
-    <color name="overlayScrim">#F214171F</color>
+    <!-- 一時停止画面の背景。透けて後ろの画面が見えないよう不透明にする。
+         通常の bg よりわずかに青みを足し、瞑想画面としての質感を出す -->
+    <color name="overlayScrim">#FF10161F</color>
+
+    <color name="chartTrack">#333A4E</color>
 </resources>

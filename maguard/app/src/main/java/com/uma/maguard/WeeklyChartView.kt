@@ -2,11 +2,11 @@ package com.uma.maguard
 
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
+import androidx.core.content.ContextCompat
 
 /**
  * 7日間の記録を積み上げ棒グラフで描くカスタムView。
@@ -28,21 +28,24 @@ class WeeklyChartView @JvmOverloads constructor(
 
     private var stats: List<Prefs.DayStat> = emptyList()
 
+    // 以前はここも4色とも固定の16進数で、実質ダークモードの色しか
+    // 使われていなかった（ライトモードでも暗い色のまま浮いて見えていた）。
+    // resources 経由にして、他の画面と同じくテーマに追従させる。
     private val resistedPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#E8A659")   // accent
+        color = ContextCompat.getColor(context, R.color.accent)
     }
     private val openedPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#3D4258")   // track
+        color = ContextCompat.getColor(context, R.color.chartTrack)
     }
     private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#8B90A3")   // textMuted
+        color = ContextCompat.getColor(context, R.color.textMuted)
         // 画素数で指定すると端末の解像度によって大きさが変わってしまうため、
         // 画面密度を掛けて dp 相当に揃える
         textSize = 10f * context.resources.displayMetrics.density
         textAlign = Paint.Align.CENTER
     }
     private val emptyPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#2C3142")   // border
+        color = ContextCompat.getColor(context, R.color.border)
     }
 
     fun setStats(newStats: List<Prefs.DayStat>) {

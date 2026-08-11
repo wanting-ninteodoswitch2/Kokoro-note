@@ -3,11 +3,11 @@ package com.uma.maguard
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
+import androidx.core.content.ContextCompat
 
 /**
  * 呼吸に合わせて膨らみ・縮む円を描く。
@@ -35,12 +35,14 @@ class BreathingView @JvmOverloads constructor(
     private var progress = 0f          // 0=最小, 1=最大
     private var animator: ValueAnimator? = null
 
+    // @color/accent を直接読む。ライト/ダークで値が違うため、レイアウトの
+    // 色トークンと同じく resources 経由にして、テーマ変更に自動追従させる
     private val circlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#E8A659")
+        color = ContextCompat.getColor(context, R.color.accent)
         style = Paint.Style.FILL
     }
     private val ringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#E8A659")
+        color = ContextCompat.getColor(context, R.color.accent)
         style = Paint.Style.STROKE
         strokeWidth = 2f * context.resources.displayMetrics.density
         alpha = 90
