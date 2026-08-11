@@ -59,16 +59,17 @@ class Prefs(context: Context) {
      *
      * NONE      … 摩擦なし（タップだけ）
      * LONG_PRESS… 3秒間の長押しが必要
-     * REASON    … 開く理由を一言入力させる
      * TYPE_TEXT … 決まった文章を書き写させる（一番強い）
+     *
+     * 「開く理由を一言入力させる」モード（REASON）は、実機で
+     * 正しく機能しないという報告を受けて廃止した。
      */
     enum class FrictionMode {
-        NONE, LONG_PRESS, REASON, TYPE_TEXT;
+        NONE, LONG_PRESS, TYPE_TEXT;
 
         fun label(): String = when (this) {
             NONE -> "なし"
             LONG_PRESS -> "長押し（3秒）"
-            REASON -> "理由を書く"
             TYPE_TEXT -> "文章を書き写す"
         }
 
@@ -83,7 +84,6 @@ class Prefs(context: Context) {
         fun description(): String = when (this) {
             NONE -> "タップするだけで開けます。呼吸の間だけを挟みます"
             LONG_PRESS -> "ボタンを3秒押し続けます。人前でも目立ちません"
-            REASON -> "なぜ開くのかを一言入力します。惰性で開いていることに気づきやすくなります"
             TYPE_TEXT -> "指定した文章を書き写します。抑止力は最も強いですが、外出先では使いにくいかもしれません"
         }
     }
@@ -318,56 +318,6 @@ class Prefs(context: Context) {
         prefs.edit().putString(KEY_TYPE_TEXT, text.ifBlank { DEFAULT_TYPE_TEXT }).apply()
     }
 
-    /**
-     * 「理由」モードで入力された内容を記録する。
-     * 後から振り返ると、自分がどんなときに開いているかが見える。
-     */
-    fun recordReason(packageName: String, reason: String): Unit = synchronized(lock) {
-        if (reason.isBlank()) return@synchronized
-        val arr = readJsonArray(KEY_REASONS)
-
-        arr.put(JSONObject().apply {
-            put("ts", System.currentTimeMillis())
-            put("package", packageName)
-            put("reason", reason.trim())
-        })
-
-        // 直近200件だけ保持する
-        val trimmed = if (arr.length() > 200) {
-            JSONArray().also { out ->
-                for (i in (arr.length() - 200) until arr.length()) out.put(arr.get(i))
-            }
-        } else arr
-
-        prefs.edit().putString(KEY_REASONS, trimmed.toString()).apply()
-        // 件数を切り詰めた場合は別インスタンスになるため、
-        // キャッシュも新しい方に差し替えておく
-        jsonArrayCache[KEY_REASONS] = trimmed
-    }
-
-    data class ReasonEntry(val timestamp: Long, val packageName: String, val reason: String)
-
-    fun getReasons(limit: Int = 50): List<ReasonEntry> = synchronized(lock) {
-        return try {
-            val arr = readJsonArray(KEY_REASONS)
-            val out = mutableListOf<ReasonEntry>()
-            for (i in (arr.length() - 1) downTo 0) {
-                if (out.size >= limit) break
-                val o = arr.getJSONObject(i)
-                out.add(
-                    ReasonEntry(
-                        timestamp = o.optLong("ts"),
-                        packageName = o.optString("package"),
-                        reason = o.optString("reason")
-                    )
-                )
-            }
-            out
-        } catch (e: Exception) {
-            emptyList()
-        }
-    }
-
     // ---------- 猶予期限 ----------
 
     /**
@@ -406,18 +356,6 @@ class Prefs(context: Context) {
      * そのまま書き換えてから保存しているため、
      * キャッシュした参照と実データがずれることはない。
      */
-    /** JSON配列版。readJson と同じくキャッシュを効かせる */
-    private fun readJsonArray(key: String): JSONArray = synchronized(lock) {
-        jsonArrayCache.getOrPut(key) {
-            val raw = prefs.getString(key, null)
-            try {
-                if (raw != null) JSONArray(raw) else JSONArray()
-            } catch (e: Exception) {
-                JSONArray()
-            }
-        }
-    }
-
     private fun readJson(key: String): JSONObject = synchronized(lock) {
         jsonCache.getOrPut(key) {
             val raw = prefs.getString(key, null)
@@ -535,19 +473,16 @@ class Prefs(context: Context) {
         // 猶予期限・起動回数など、頻繁に読まれるJSONの実体。
         // 読み書きはすべて lock の下で行う。
         private val jsonCache = mutableMapOf<String, JSONObject>()
-        private val jsonArrayCache = mutableMapOf<String, JSONArray>()
 
         /** 設定を外部から書き換えた場合など、キャッシュを捨てたいときに使う */
         fun invalidateCache() = synchronized(lock) {
             targetsCache = null
             timeRulesCache = null
             jsonCache.clear()
-            jsonArrayCache.clear()
         }
 
         const val PREFS_NAME = "ma_guard_prefs"
         private const val KEY_TYPE_TEXT = "type_text"
-        private const val KEY_REASONS = "reasons_v1"
         private const val KEY_ALARM_IDS = "alarm_ids_v1"
         private const val KEY_GRACE = "grace_until_v1"
         private const val KEY_LAUNCHES = "launch_counts_v1"

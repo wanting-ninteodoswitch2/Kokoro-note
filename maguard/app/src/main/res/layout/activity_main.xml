@@ -190,50 +190,23 @@
         </LinearLayout>
 
         <!-- クイックアクション -->
-        <LinearLayout
+        <Button
+            android:id="@+id/timeRulesButton"
+            style="@null"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="20dp">
-
-            <Button
-                android:id="@+id/timeRulesButton"
-                style="@null"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="6dp"
-                android:background="@drawable/card_background_flat"
-                android:gravity="center"
-                android:textColor="@color/text"
-                android:textSize="13sp"
-                android:textAllCaps="false"
-                android:paddingTop="14dp"
-                android:paddingBottom="14dp"
-                android:drawableStart="@drawable/ic_clock"
-                android:drawableTint="@color/textMuted"
-                android:drawablePadding="8dp"
-                android:text="時間帯ルール" />
-
-            <Button
-                android:id="@+id/reasonsButton"
-                style="@null"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:background="@drawable/card_background_flat"
-                android:gravity="center"
-                android:textColor="@color/text"
-                android:textSize="13sp"
-                android:textAllCaps="false"
-                android:paddingTop="14dp"
-                android:paddingBottom="14dp"
-                android:drawableStart="@drawable/ic_list"
-                android:drawableTint="@color/textMuted"
-                android:drawablePadding="8dp"
-                android:text="開いた理由" />
-        </LinearLayout>
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/card_background_flat"
+            android:gravity="center"
+            android:textColor="@color/text"
+            android:textSize="13sp"
+            android:textAllCaps="false"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp"
+            android:drawableStart="@drawable/ic_clock"
+            android:drawableTint="@color/textMuted"
+            android:drawablePadding="8dp"
+            android:text="時間帯ルール" />
 
         <TextView
             style="@style/SectionHeader"

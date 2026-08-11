@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.graphics.PixelFormat
+import android.graphics.Point
 import android.os.Build
 import android.os.CountDownTimer
 import android.os.Handler
@@ -21,6 +22,8 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -166,18 +169,53 @@ class OverlayService : Service() {
             WindowManager.LayoutParams.TYPE_PHONE
         }
 
-        // 理由入力・書き写しではキーボードを使うため、フォーカスを受け取れる
+        // 書き写しではキーボードを使うため、フォーカスを受け取れる
         // ウィンドウにする必要がある。FLAG_NOT_FOCUSABLE は付けない。
         // SOFT_INPUT_ADJUST_RESIZE でキーボード表示時に画面を縮める。
+        //
+        // ＜MATCH_PARENT だけでは画面全体を覆えない＞
+        // 以前は幅高さを MATCH_PARENT にして FLAG_LAYOUT_IN_SCREEN だけ
+        // 付けていたが、これだとナビゲーションバー（ジェスチャーバー含む）の
+        // 領域までは覆われない機種があった。その隙間から下にある
+        // 対象アプリの画面が見え、しかもタッチがそのまま素通しで
+        // 対象アプリに届いてしまう＝一時停止画面をすり抜けて開けてしまう
+        // という致命的な不具合になっていた。
+        // 画面の実サイズを明示的に指定し、FLAG_LAYOUT_NO_LIMITS と
+        // layoutInDisplayCutoutMode を付けて、ノッチ・ナビゲーションバーの
+        // 領域まで含めた実ピクセルサイズでウィンドウを確保する。
+        val screenSize = realScreenSize()
         val params = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.MATCH_PARENT,
+            screenSize.x,
+            screenSize.y,
             type,
-            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
             PixelFormat.TRANSLUCENT
         ).apply {
-            gravity = Gravity.CENTER
+            gravity = Gravity.TOP or Gravity.START
+            x = 0
+            y = 0
             softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                layoutInDisplayCutoutMode =
+                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+            }
+        }
+
+        // ウィンドウがステータスバー・ナビゲーションバーの裏まで広がった分、
+        // 中身（見出しやボタン）がそれらに隠れないよう、システムバーの
+        // 高さぶんを追加の余白として反映する。XML側の32dpパディングは
+        // そのまま活かし、そこにシステムバーの分を足す。
+        val basePadding = view.paddingLeft
+        ViewCompat.setOnApplyWindowInsetsListener(view) { v, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(
+                basePadding + bars.left,
+                basePadding + bars.top,
+                basePadding + bars.right,
+                basePadding + bars.bottom
+            )
+            insets
         }
 
         // canDrawOverlays を通っていても、メーカー独自ROMの制限などで
@@ -334,8 +372,7 @@ class OverlayService : Service() {
                         context = this@OverlayService,
                         root = view,
                         mode = config.friction
-                    ) { reason ->
-                        reason?.let { Prefs(this@OverlayService).recordReason(packageName, it) }
+                    ) {
                         unlockAndOpen(packageName, config, mode)
                     }.also { it.attach() }
                 }
@@ -404,6 +441,24 @@ class OverlayService : Service() {
 
         record(resisted = false)
         removeOverlay()
+    }
+
+    /**
+     * ナビゲーションバー・ノッチも含めた画面の実ピクセルサイズを取得する。
+     * WindowManager#getDefaultDisplay() は API 30 で非推奨になったが、
+     * minSdk が 26 のためこのアプリでは両対応が必要。
+     */
+    private fun realScreenSize(): Point {
+        val point = Point()
+        val wm = windowManager ?: return point
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val bounds = wm.currentWindowMetrics.bounds
+            point.set(bounds.width(), bounds.height())
+        } else {
+            @Suppress("DEPRECATION")
+            wm.defaultDisplay.getRealSize(point)
+        }
+        return point
     }
 
     /**
@@ -491,7 +546,7 @@ class OverlayService : Service() {
         overlayView = null
     }
 
-    /** 理由入力や書き写しで出したキーボードを確実に閉じる */
+    /** 書き写しで出したキーボードを確実に閉じる */
     private fun hideKeyboard() {
         // ビューがウィンドウから外れた直後に呼ばれると、
         // トークンが無効になっていて例外になることがある。

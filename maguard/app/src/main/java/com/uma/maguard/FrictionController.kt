@@ -20,7 +20,7 @@ import androidx.core.content.ContextCompat
  * カウントダウンが終わるのを待ってタップする、という一連の動作が
  * それ自体ルーティン化してしまう。
  *
- * ひと手間 —— 長押し、理由の入力、文章の書き写し —— を挟むと、
+ * ひと手間 —— 長押し、文章の書き写し —— を挟むと、
  * 「開く」という判断に意識を戻さざるを得なくなる。
  *
  * ＜設計＞
@@ -31,7 +31,7 @@ class FrictionController(
     private val context: Context,
     private val root: View,
     private val mode: Prefs.FrictionMode,
-    private val onUnlocked: (reason: String?) -> Unit
+    private val onUnlocked: () -> Unit
 ) {
 
     private val openButton: Button = root.findViewById(R.id.openButton)
@@ -48,7 +48,6 @@ class FrictionController(
         when (mode) {
             Prefs.FrictionMode.NONE -> setupNone()
             Prefs.FrictionMode.LONG_PRESS -> setupLongPress()
-            Prefs.FrictionMode.REASON -> setupReason()
             Prefs.FrictionMode.TYPE_TEXT -> setupTypeText()
         }
     }
@@ -63,7 +62,7 @@ class FrictionController(
 
     private fun setupNone() {
         frictionGroup.visibility = View.GONE
-        openButton.setOnClickListener { onUnlocked(null) }
+        openButton.setOnClickListener { onUnlocked() }
     }
 
     // ---------- 長押し ----------
@@ -110,7 +109,7 @@ class FrictionController(
             addUpdateListener { frictionProgress.progress = it.animatedValue as Int }
             addListener(object : android.animation.AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: android.animation.Animator) {
-                    if (!holdCancelled) onUnlocked(null)
+                    if (!holdCancelled) onUnlocked()
                 }
             })
             start()
@@ -122,36 +121,6 @@ class FrictionController(
         holdAnimator?.cancel()
         holdAnimator = null
         frictionProgress.progress = 0
-    }
-
-    // ---------- 理由を書く ----------
-
-    /**
-     * 開く理由を一言入力させる。
-     * 記録として残るので、後から「自分がどんなときに開いているか」を
-     * 振り返れる。3文字以上でボタンが有効になる。
-     */
-    private fun setupReason() {
-        frictionGroup.visibility = View.VISIBLE
-        frictionInput.visibility = View.VISIBLE
-        frictionProgress.visibility = View.GONE
-        frictionPrompt.text = "なぜ、いま開くの？"
-        frictionInput.hint = "例：連絡を確認したい"
-        frictionInput.setText("")
-        openButton.isEnabled = false
-        openButton.alpha = 0.4f
-
-        frictionInput.addTextChangedListener(object : SimpleTextWatcher() {
-            override fun afterTextChanged(s: Editable?) {
-                val ok = (s?.trim()?.length ?: 0) >= MIN_REASON_LENGTH
-                openButton.isEnabled = ok
-                openButton.alpha = if (ok) 1f else 0.4f
-            }
-        })
-
-        openButton.setOnClickListener {
-            onUnlocked(frictionInput.text.toString().trim())
-        }
     }
 
     // ---------- 文章を書き写す ----------
@@ -210,7 +179,7 @@ class FrictionController(
             }
         })
 
-        openButton.setOnClickListener { onUnlocked(null) }
+        openButton.setOnClickListener { onUnlocked() }
     }
 
     /** TextWatcherは3メソッド必須なので、使わない分をまとめる */
@@ -229,6 +198,5 @@ class FrictionController(
 
     companion object {
         private const val HOLD_DURATION_MS = 3000L
-        private const val MIN_REASON_LENGTH = 3
     }
 }

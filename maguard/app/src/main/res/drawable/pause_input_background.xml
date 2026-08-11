@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  一時停止画面の「理由を書く」入力欄用。グラデーション背景に依存せず
+  一時停止画面の「書き写す」入力欄用。グラデーション背景に依存せず
   常に読めるよう、独立した明色カードとして浮かせる。
 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"

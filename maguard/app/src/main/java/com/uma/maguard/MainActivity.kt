@@ -19,13 +19,11 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.palette.graphics.Palette
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
 
 /**
@@ -71,10 +69,6 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.timeRulesButton).setOnClickListener {
             startActivity(Intent(this, TimeRulesActivity::class.java))
-        }
-
-        findViewById<Button>(R.id.reasonsButton).setOnClickListener {
-            showReasonsDialog()
         }
     }
 
@@ -288,40 +282,4 @@ class MainActivity : AppCompatActivity() {
             ContextCompat.getDrawable(this, R.drawable.ic_apps)
         }
 
-    /**
-     * 「理由を書く」モードで入力された内容を振り返る。
-     * どんなときに開いているかのパターンが見えるのが狙い。
-     */
-    private fun showReasonsDialog() {
-        val reasons = prefs.getReasons(50)
-        if (reasons.isEmpty()) {
-            AlertDialog.Builder(this)
-                .setTitle("開いた理由")
-                .setMessage(
-                    "まだ記録がありません。\n\n" +
-                        "アプリの設定で摩擦を「理由を書く」にすると、" +
-                        "開くたびに入力した理由がここに残ります。"
-                )
-                .setPositiveButton("閉じる", null)
-                .show()
-            return
-        }
-
-        val fmt = SimpleDateFormat("M/d HH:mm", Locale.JAPAN)
-        val pm = packageManager
-        val items = reasons.map { entry ->
-            val appLabel = try {
-                pm.getApplicationLabel(pm.getApplicationInfo(entry.packageName, 0)).toString()
-            } catch (e: Exception) {
-                entry.packageName
-            }
-            "${fmt.format(Date(entry.timestamp))}  $appLabel\n${entry.reason}"
-        }.toTypedArray()
-
-        AlertDialog.Builder(this)
-            .setTitle("開いた理由（直近${reasons.size}件）")
-            .setItems(items, null)
-            .setPositiveButton("閉じる", null)
-            .show()
-    }
 }

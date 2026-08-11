@@ -82,7 +82,7 @@
             android:gravity="center"
             android:paddingBottom="20dp" />
 
-        <!-- 摩擦の仕掛け（長押しの進捗 / 理由入力 / 書き写し） -->
+        <!-- 摩擦の仕掛け（長押しの進捗 / 書き写し） -->
         <LinearLayout
             android:id="@+id/frictionGroup"
             android:layout_width="match_parent"

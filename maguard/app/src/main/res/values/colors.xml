@@ -50,11 +50,11 @@
     <color name="pauseTextOnGradient">#FFFFFF</color>
     <color name="pauseTextMutedOnGradient">#D9D6F5</color>
 
-    <!-- 「見る」リンクや理由入力のラベルなど、控えめな部品用の半透明白チップ -->
+    <!-- 「見る」リンクや摩擦のラベルなど、控えめな部品用の半透明白チップ -->
     <color name="pauseChipBackground">#33FFFFFF</color>
     <color name="pauseChipText">#FFFFFF</color>
 
-    <!-- 理由入力欄。グラデーションのどこに来ても読めるよう、独立した明色カードにする -->
+    <!-- 書き写す入力欄。グラデーションのどこに来ても読めるよう、独立した明色カードにする -->
     <color name="pauseInputBackground">#F6F5FC</color>
     <color name="pauseInputText">#2A2740</color>
     <color name="pauseInputHint">#9B96B8</color>
