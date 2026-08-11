@@ -52,15 +52,36 @@ class BreathingView @JvmOverloads constructor(
 
     /**
      * 呼吸のサイクルを開始する。
-     * 4秒で吸って4秒で吐く、というゆっくりした周期にしている。
+     * 4秒で吸って4秒で吐く、というゆっくりした周期を基準にする。
      * 速すぎると落ち着かず、遅すぎると待たされている感覚が強くなる。
+     *
+     * ＜totalDurationMs を渡す理由＞
+     * 以前はここが無限リピートで、呼び出し側（OverlayService の
+     * CountDownTimer）が独立したタイミングで stop() を呼んで止めていた。
+     * 呼吸の周期（8秒）と待ち時間（config.pauseSeconds）は無関係な数字なので、
+     * 待ち時間が尽きた瞬間の呼吸の位相はほぼランダムになる。
+     * 運悪く「吸っている（膨らんでいる）」途中で止まると、
+     * 円が膨らみかけた次の瞬間に消える、という不自然な見え方になっていた
+     * （実機で「最後の1秒で少し円が大きくなる」と報告された不具合）。
+     *
+     * ここでは呼吸の半周期（吸う/吐くそれぞれ）の回数が必ず偶数になるよう
+     * 調整し、アニメーション全体がちょうど totalDurationMs で終わり、
+     * かつ必ず「吐き切った（縮みきった）」ところで終わるようにする。
+     * 自然な4秒ペースからは多少ずれるが、待ち時間の長さに関わらず
+     * 常に滑らかに収まって終わる方を優先した。
      */
-    fun start() {
+    fun start(totalDurationMs: Long) {
         animator?.cancel()
+
+        val rawHalfCycles = (totalDurationMs / CYCLE_MS).toInt()
+        val halfCycles = (if (rawHalfCycles % 2 == 0) rawHalfCycles else rawHalfCycles + 1)
+            .coerceAtLeast(2)
+        val halfCycleDuration = (totalDurationMs / halfCycles).coerceAtLeast(1L)
+
         animator = ValueAnimator.ofFloat(0f, 1f).apply {
-            duration = CYCLE_MS
+            duration = halfCycleDuration
             repeatMode = ValueAnimator.REVERSE
-            repeatCount = ValueAnimator.INFINITE
+            repeatCount = halfCycles - 1
             interpolator = AccelerateDecelerateInterpolator()
             addUpdateListener {
                 progress = it.animatedValue as Float

@@ -293,13 +293,17 @@ class OverlayService : Service() {
             openButton.isEnabled = false
             view.findViewById<View>(R.id.frictionGroup).visibility = View.GONE
             countdownText.text = config.pauseSeconds.toString()
-            breathingView.start()
 
             // 500ms 余分に持たせているのは、CountDownTimer の刻みが
             // ぴったり1秒ではないため。素直に秒数×1000 を渡すと、
             // 最初の数字が一瞬で消えたり、最後の1秒が極端に短くなったりして、
             // 「間を取る」ための画面としては落ち着かない見え方になる。
-            timer = object : CountDownTimer(config.pauseSeconds * 1000L + 500L, 1000L) {
+            val pauseDurationMs = config.pauseSeconds * 1000L + 500L
+            // 呼吸アニメーションにも同じ長さを渡し、待ち時間が尽きる瞬間に
+            // 必ず「縮みきった」状態で終わるようにする（BreathingView.start 参照）
+            breathingView.start(pauseDurationMs)
+
+            timer = object : CountDownTimer(pauseDurationMs, 1000L) {
                 override fun onTick(ms: Long) {
                     countdownText.text = ((ms / 1000) + 1).toString()
                 }
