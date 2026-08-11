@@ -35,14 +35,16 @@ class BreathingView @JvmOverloads constructor(
     private var progress = 0f          // 0=最小, 1=最大
     private var animator: ValueAnimator? = null
 
-    // @color/accent を直接読む。ライト/ダークで値が違うため、レイアウトの
-    // 色トークンと同じく resources 経由にして、テーマ変更に自動追従させる
+    // 一時停止画面は藍〜ラベンダーのグラデーション背景（pauseGradient系）を
+    // 独自に持つため、他画面のアクセント色（青）ではなく白系のトークンを使う。
+    // resources 経由にして、ライト/ダークどちらのグラデーションの上でも
+    // 見やすい白のまま保つ。
     private val circlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = ContextCompat.getColor(context, R.color.accent)
+        color = ContextCompat.getColor(context, R.color.pauseTextOnGradient)
         style = Paint.Style.FILL
     }
     private val ringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = ContextCompat.getColor(context, R.color.accent)
+        color = ContextCompat.getColor(context, R.color.pauseTextOnGradient)
         style = Paint.Style.STROKE
         strokeWidth = 2f * context.resources.displayMetrics.density
         alpha = 90

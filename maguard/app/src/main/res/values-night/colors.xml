@@ -16,9 +16,13 @@
 
     <color name="resisted">#6FBF8B</color>
 
-    <!-- 一時停止画面の背景。透けて後ろの画面が見えないよう不透明にする。
-         通常の bg よりわずかに青みを足し、瞑想画面としての質感を出す -->
-    <color name="overlayScrim">#FF10161F</color>
-
     <color name="chartTrack">#333A4E</color>
+
+    <!-- 一時停止画面のグラデーション。ダークモードでは下側も明るいラベンダーまで
+         振り切らず、藍〜紫の範囲に留めて他画面の暗い基調から浮かないようにする -->
+    <color name="pauseGradientTop">#1C1A2E</color>
+    <color name="pauseGradientMid">#2E2B52</color>
+    <color name="pauseGradientBottom">#46406E</color>
+
+    <color name="pauseAccent">#6C63F0</color>
 </resources>

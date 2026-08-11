@@ -4,21 +4,27 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:background="@color/overlayScrim"
+    android:background="@drawable/pause_gradient_background"
     android:padding="32dp">
 
+    <!--
+      headlineText を一番目立つ「見出し」として太字・大きめにしている。
+      グラデーションの上〜中間（暗い部分）に位置するので、白文字で確実に読める。
+    -->
     <TextView
         android:id="@+id/headlineText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@color/textMuted"
-        android:textSize="16sp" />
+        android:textColor="@color/pauseTextOnGradient"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:gravity="center" />
 
     <TextView
         android:id="@+id/ruleText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@color/accentText"
+        android:textColor="@color/pauseTextMutedOnGradient"
         android:textSize="12sp"
         android:paddingTop="6dp"
         android:visibility="gone" />
@@ -27,7 +33,7 @@
         android:id="@+id/factText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@color/text"
+        android:textColor="@color/pauseTextOnGradient"
         android:textSize="15sp"
         android:paddingTop="10dp"
         android:visibility="gone" />
@@ -52,7 +58,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:textColor="#14171F"
+            android:textColor="@color/pauseTextOnGradient"
             android:textSize="44sp"
             android:textStyle="bold"
             android:fontFamily="@font/space_mono" />
@@ -70,8 +76,10 @@
             android:id="@+id/questionText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/text"
+            android:textColor="@color/pauseTextOnGradient"
             android:textSize="22sp"
+            android:textStyle="bold"
+            android:gravity="center"
             android:paddingBottom="20dp" />
 
         <!-- 摩擦の仕掛け（長押しの進捗 / 理由入力 / 書き写し） -->
@@ -84,24 +92,37 @@
             android:visibility="gone"
             android:paddingBottom="16dp">
 
+            <!--
+              frictionPrompt はグラデーションの中〜下寄りに来ることがあるため、
+              背景色に依存しないチップにして、どの位置でも確実に読めるようにする。
+            -->
             <TextView
                 android:id="@+id/frictionPrompt"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/textMuted"
-                android:textSize="14sp"
+                android:textColor="@color/pauseChipText"
+                android:textSize="13sp"
                 android:gravity="center"
-                android:paddingBottom="10dp" />
+                android:background="@drawable/pause_chip_background"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:layout_marginBottom="12dp" />
 
+            <!--
+              入力欄はグラデーションから独立した明色カードにする。
+              背景の位置によらず常に読める、確実な選択。
+            -->
             <EditText
                 android:id="@+id/frictionInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/text"
-                android:textColorHint="@color/textMuted"
+                android:textColor="@color/pauseInputText"
+                android:textColorHint="@color/pauseInputHint"
                 android:textSize="15sp"
-                android:background="@drawable/card_background_flat"
-                android:padding="12dp"
+                android:background="@drawable/pause_input_background"
+                android:padding="14dp"
                 android:inputType="text"
                 android:maxLines="3"
                 android:importantForAutofill="no"
@@ -114,6 +135,8 @@
                 android:layout_height="6dp"
                 android:max="100"
                 android:progress="0"
+                android:progressTint="@color/pauseAccent"
+                android:progressBackgroundTint="@color/pauseChipBackground"
                 android:visibility="gone" />
 
         </LinearLayout>
@@ -122,10 +145,12 @@
           ＜「やめておく」を大きく、「見る」を小さくしている理由＞
           PNAS の研究（Grüning et al., 2023）で最も効果が大きいとされた
           「離脱の選択肢」を、見た目でも最優先にする。
-          以前は逆に、やめておく側が地味な OutlinedButton で、
-          しかもこの半透明の背景（#F214171F）の上では枠線がほぼ見えず、
-          実機では文字だけが小さく浮いているように見えてしまっていた。
-          塗りつぶしのピル型ボタンにして確実に視認できるようにする。
+          参考にしたアプリ（one sec）では両方のボタンが待ち時間の間ずっと
+          無効化されているが、ここではその挙動は踏襲していない。
+          「やめておく」を待たせるのは離脱側にまで摩擦をかけることになり、
+          上記の研究結果と逆行するため、これまで通り即座に押せるままにする。
+          変えたのは見た目だけで、塗りつぶしのピル型ボタンにして
+          グラデーション背景の上でも確実に視認できるようにしている。
         -->
         <Button
             android:id="@+id/cancelButton"
@@ -135,12 +160,17 @@
             android:layout_marginBottom="16dp"
             android:background="@drawable/button_pause_primary"
             android:foreground="?android:attr/selectableItemBackground"
-            android:textColor="@color/bg"
+            android:textColor="@color/pauseAccentText"
             android:textSize="16sp"
             android:textStyle="bold"
             android:textAllCaps="false" />
 
-        <!-- 「見る」は選ぶハードルを上げたいので、あえて控えめなテキストリンクにする -->
+        <!--
+          「見る」は選ぶハードルを上げたいので、あえて控えめな見た目にする。
+          ただし透明な背景のままだと、グラデーションが淡い位置に来たときに
+          文字色とのコントラストが不足する場合があるため、
+          半透明の白チップの上に乗せて、背景色によらず確実に読めるようにする。
+        -->
         <Button
             android:id="@+id/openButton"
             style="@null"
@@ -148,12 +178,12 @@
             android:layout_height="wrap_content"
             android:minWidth="48dp"
             android:minHeight="48dp"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
             android:paddingTop="10dp"
             android:paddingBottom="10dp"
-            android:background="?android:attr/selectableItemBackground"
-            android:textColor="@color/textMuted"
+            android:background="@drawable/pause_chip_background"
+            android:textColor="@color/pauseChipText"
             android:textSize="14sp"
             android:textAllCaps="false" />
 

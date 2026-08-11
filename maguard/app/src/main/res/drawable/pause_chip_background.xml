@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  一時停止画面の中で控えめに見せたい部品（「見る」リンク、理由入力のラベルなど）用。
+  半透明の白なので、グラデーションのどの位置に置いても背景色に関わらず
+  同じ見え方になり、readable であることを保証できる。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/pauseChipBackground" />
+    <corners android:radius="24dp" />
+</shape>

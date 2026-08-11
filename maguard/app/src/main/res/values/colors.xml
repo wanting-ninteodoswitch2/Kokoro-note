@@ -24,16 +24,41 @@
 
     <color name="resisted">#2F9E68</color>
 
-    <!--
-      一時停止画面の背景。以前は半透明（アルファ F2）で、実機で見ると
-      後ろの元のアプリ画面がうっすら透けて動いて見え、気が散る原因になった。
-      「間を取る」ための画面なので、後ろを完全に覆う不透明色にする。
-      通常画面の bg とは少し色味を変え、青みを強めた落ち着いた色にして
-      「瞑想の場」として画面が切り替わったことを感じさせる。
-    -->
-    <color name="overlayScrim">#FFEEF3F7</color>
-
     <!-- 7日間グラフの「見た回数（薄い方）」バー用。accent とは別に、
          背景に対してほどよく視認できる中間トーンが必要なので専用トークンにする -->
     <color name="chartTrack">#D7DEE8</color>
+
+    <!--
+      一時停止画面専用の配色。
+      参考動画（瞑想系アプリ「one sec」）に合わせて、通常画面の accent（青）とは
+      別系統の、藍〜ラベンダーのグラデーションにする。一時停止画面だけ特別に
+      「静かな場所に切り替わった」感覚を出すのが狙いなので、他画面のトークンとは
+      あえて独立させている。
+      グラデーションは上ほど暗い藍色、下ほど淡いラベンダーにし、文字は
+      画面の大半を占める暗めの上〜中間部分でも読めるよう白系で統一する。
+      ボタン・入力欄など「自前の背景を持つ部品」は、グラデーションのどの位置に
+      来ても確実に読めるよう不透明なチップ/カードにしている。
+    -->
+    <color name="pauseGradientTop">#4A4770</color>
+    <color name="pauseGradientMid">#5C58A0</color>
+    <color name="pauseGradientBottom">#D9D6F5</color>
+
+    <!-- 「やめておく」ボタンの塗り色。押せる状態を示す濃い藍色 -->
+    <color name="pauseAccent">#4F46E5</color>
+    <color name="pauseAccentText">#FFFFFF</color>
+
+    <color name="pauseTextOnGradient">#FFFFFF</color>
+    <color name="pauseTextMutedOnGradient">#D9D6F5</color>
+
+    <!-- 「見る」リンクや理由入力のラベルなど、控えめな部品用の半透明白チップ -->
+    <color name="pauseChipBackground">#33FFFFFF</color>
+    <color name="pauseChipText">#FFFFFF</color>
+
+    <!-- 理由入力欄。グラデーションのどこに来ても読めるよう、独立した明色カードにする -->
+    <color name="pauseInputBackground">#F6F5FC</color>
+    <color name="pauseInputText">#2A2740</color>
+    <color name="pauseInputHint">#9B96B8</color>
+    <!-- 「書き写す」摩擦で、入力中の文字が対象の文章と食い違ったときの表示色。
+         入力欄は常に明色カードなので、テーマに関わらずこの1色で足りる -->
+    <color name="pauseInputError">#C0392B</color>
 </resources>

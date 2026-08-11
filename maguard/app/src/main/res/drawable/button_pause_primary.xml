@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   「やめておく」用の背景。ピル型の塗りつぶしボタンにして、
-  半透明の一時停止画面の上でも確実に視認できる高コントラストにする。
+  グラデーション背景の上でも確実に視認できる高コントラストにする。
+  塗り色は pauseAccent（藍色）にして、一時停止画面のグラデーションと
+  同系統でまとまるようにしている。
   cornerRadius はボタンの高さ(56dp)の半分にして完全な丸みにしている。
 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <solid android:color="@color/text" />
+    <solid android:color="@color/pauseAccent" />
     <corners android:radius="28dp" />
 </shape>

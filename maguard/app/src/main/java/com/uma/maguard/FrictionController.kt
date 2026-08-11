@@ -10,6 +10,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 
 /**
  * 「見る」を押すまでに挟む摩擦を制御する。
@@ -196,12 +197,14 @@ class FrictionController(
                 val ok = target.isNotBlank() && typed == target.trim()
                 openButton.isEnabled = ok
                 openButton.alpha = if (ok) 1f else 0.4f
-                // 途中経過を色で示す。合っている間は薄いアクセント色
+                // 途中経過を色で示す。入力欄は常に明色カード（pauseInputBackground）
+                // なので、以前の「透明な暗い背景」向けだった配色（白文字がデフォルト）
+                // のままだと読めなくなる。カードの上で完結する色に揃える。
                 frictionInput.setTextColor(
                     when {
-                        typed.isEmpty() -> 0xFFEDEDF2.toInt()
-                        target.startsWith(typed) -> 0xFFE8A659.toInt()
-                        else -> 0xFFCC6666.toInt()
+                        typed.isEmpty() -> ContextCompat.getColor(context, R.color.pauseInputText)
+                        target.startsWith(typed) -> ContextCompat.getColor(context, R.color.pauseAccent)
+                        else -> ContextCompat.getColor(context, R.color.pauseInputError)
                     }
                 )
             }
