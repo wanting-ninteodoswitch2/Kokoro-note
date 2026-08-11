@@ -83,7 +83,15 @@ class MaAccessibilityService : AccessibilityService() {
 
         // 別アプリに移ったら、前のアプリの使用時間チェック予約を取り消す
         val previous = currentPackage
-        if (packageName != previous) {
+        // 対象アプリの内部で画面が切り替わる（別のアクティビティ/フラグメントに
+        // 移る）だけでも TYPE_WINDOW_STATE_CHANGED は何度も飛んでくる。
+        // 「本当にこのアプリに入ってきた瞬間」だけを新しい起動として扱うため、
+        // 直前の前面アプリと変わっていないかをここで確定させておく。
+        // これを使わずに毎回オーバーレイを出していたため、アプリ内を
+        // 操作しているだけで「まだ見たい？」が何度も出てしまっていた
+        // （実機で「1分ごとに出てくる」と報告された不具合）。
+        val isFreshEntry = packageName != previous
+        if (isFreshEntry) {
             previous?.let { UsageAlarmScheduler.cancel(this, it) }
             currentPackage = packageName
         }
@@ -120,7 +128,7 @@ class MaAccessibilityService : AccessibilityService() {
         // UsageStats の反映を待つと境界が1回ぶんずれるため、
         // 検知した時点で確定させる。
         var ownLaunchCount: Int? = null
-        if (packageName != previous) {
+        if (isFreshEntry) {
             ownLaunchCount = prefs.recordLaunch(packageName, todayKey(), LAUNCH_GAP_MS)
 
             // ここでキャッシュを丸ごと捨てると、直後の集計で
@@ -143,9 +151,16 @@ class MaAccessibilityService : AccessibilityService() {
 
         // 1日の上限チェックは猶予より優先する。
         // 「もう少しだけ」を繰り返して無限に延長できてしまうのを防ぐため。
+        //
+        // ここも isFreshEntry で絞る。ブロック中に何らかの理由で
+        // アプリ内に留まり続けた場合、内部の画面遷移のたびに
+        // ブロック画面を出し直す必要はない（次に本当に入り直したときに
+        // また出せば十分）。
         val limitBreach = checkDailyLimits(packageName, config)
         if (limitBreach != null) {
-            showOverlay(packageName, OverlayService.MODE_DAILY_LIMIT, limitBreach)
+            if (isFreshEntry) {
+                showOverlay(packageName, OverlayService.MODE_DAILY_LIMIT, limitBreach)
+            }
             return
         }
 
@@ -155,7 +170,12 @@ class MaAccessibilityService : AccessibilityService() {
             return
         }
 
-        showOverlay(packageName, OverlayService.MODE_LAUNCH, currentStats(packageName))
+        // 起動時の「ひと呼吸」は、本当にこのアプリへ入ってきたときだけ出す。
+        // 同じアプリ内で画面を操作しているだけなら何もしない
+        // （連続使用のチェックは usageLimitMin 側のアラームに任せる）。
+        if (isFreshEntry) {
+            showOverlay(packageName, OverlayService.MODE_LAUNCH, currentStats(packageName))
+        }
     }
 
     /**
