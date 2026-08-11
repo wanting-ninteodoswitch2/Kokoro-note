@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 対象アプリカードの中で、アイコンの後ろに敷く半透明の白い円バッジ -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="#3DFFFFFF" />
+</shape>

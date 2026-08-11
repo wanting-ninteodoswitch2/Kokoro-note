@@ -61,4 +61,17 @@
     <!-- 「書き写す」摩擦で、入力中の文字が対象の文章と食い違ったときの表示色。
          入力欄は常に明色カードなので、テーマに関わらずこの1色で足りる -->
     <color name="pauseInputError">#C0392B</color>
+
+    <!--
+      ホーム画面の「今日の記録」カード用グラデーション。
+      参考画像（one sec のホーム画面）にある、統計をまとめて見せる
+      グラデーションカードに寄せたもの。一時停止画面の藍〜紫とは別系統にし、
+      あくまで通常画面のアクセント（青）の延長線上の色にしてある。
+    -->
+    <color name="homeSummaryGradientStart">#4A7590</color>
+    <color name="homeSummaryGradientEnd">#3D4E78</color>
+
+    <!-- 対象アプリのカードは、アプリアイコンから抽出した色を背景に敷く
+         （MainActivity.extractCardColor）。抽出に失敗した場合のフォールバック -->
+    <color name="appCardFallback">#4A7590</color>
 </resources>

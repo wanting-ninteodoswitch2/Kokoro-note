@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ホーム画面「今日の記録」カードの背景。斜めのグラデーションで、
+     単なる白カードの並びに埋もれない主役感を出す -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:type="linear"
+        android:angle="315"
+        android:startColor="@color/homeSummaryGradientStart"
+        android:endColor="@color/homeSummaryGradientEnd" />
+    <corners android:radius="20dp" />
+</shape>

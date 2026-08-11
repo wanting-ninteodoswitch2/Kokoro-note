@@ -25,4 +25,9 @@
     <color name="pauseGradientBottom">#46406E</color>
 
     <color name="pauseAccent">#6C63F0</color>
+
+    <color name="homeSummaryGradientStart">#35566A</color>
+    <color name="homeSummaryGradientEnd">#262E4D</color>
+
+    <color name="appCardFallback">#35566A</color>
 </resources>

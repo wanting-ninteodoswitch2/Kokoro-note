@@ -57,4 +57,7 @@ dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.12.0")
+    // ホーム画面の対象アプリカードで、アプリアイコンから代表色を抽出して
+    // カード背景に使うために使用（MainActivity.extractCardColor）
+    implementation("androidx.palette:palette-ktx:1.0.0")
 }

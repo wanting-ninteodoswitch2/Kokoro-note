@@ -3,6 +3,12 @@ package com.uma.maguard
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -16,6 +22,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.palette.graphics.Palette
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -52,10 +59,6 @@ class MainActivity : AppCompatActivity() {
                 != PackageManager.PERMISSION_GRANTED
         ) {
             notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
-
-        findViewById<Button>(R.id.addAppButton).setOnClickListener {
-            startActivity(Intent(this, AppPickerActivity::class.java))
         }
 
         findViewById<ImageView>(R.id.settingsButton).setOnClickListener {
@@ -111,13 +114,6 @@ class MainActivity : AppCompatActivity() {
             if (allOk) View.GONE else View.VISIBLE
     }
 
-    /** 権限や対象アプリのON/OFF状態を、色付きのピルとして表示する共通処理 */
-    private fun applyStatusPill(view: TextView, ok: Boolean) {
-        view.text = if (ok) "有効" else "未設定"
-        view.setBackgroundResource(if (ok) R.drawable.status_pill_ok else R.drawable.status_pill_pending)
-        view.setTextColor(resources.getColor(if (ok) R.color.resisted else R.color.textMuted, theme))
-    }
-
     // ---------- 統計 ----------
 
     private fun refreshStats() {
@@ -161,7 +157,10 @@ class MainActivity : AppCompatActivity() {
      * スクロール領域を圧迫されて一度に2〜3件しか見えなかった。
      * 追加・削除・詳細設定は AppPickerActivity 側に任せ、
      * ここは「いま何が対象か」を確認するだけの読み取り専用の表示にする。
-     * 件数は少ない前提なので ListView は使わず、行を直接 addView する。
+     *
+     * 参考画像（one sec のホーム画面）に合わせて、2列のグリッドで
+     * 色分けされたカードとして並べる。「追加」タイルは常に最後のセルとして
+     * 一緒に並べるので、別立ての追加ボタンはもう置いていない。
      */
     private fun refreshTargetApps() {
         val container = findViewById<LinearLayout>(R.id.targetAppsContainer)
@@ -182,24 +181,103 @@ class MainActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.emptyTargetsText).visibility =
             if (entries.isEmpty()) View.VISIBLE else View.GONE
 
-        entries.forEach { (packageName, label, config) ->
-            val row = LayoutInflater.from(this).inflate(R.layout.item_app, container, false)
-            row.findViewById<ImageView>(R.id.appIcon).setImageDrawable(loadAppIcon(pm, packageName))
-            row.findViewById<TextView>(R.id.appLabel).text = label
-            row.findViewById<TextView>(R.id.appDetail).text = buildString {
-                append("${config.pauseSeconds}秒待つ / ${config.graceMinutes}分は再表示しない")
-                if (config.usageLimitMin > 0) append(" / ${config.usageLimitMin}分で再確認")
-                if (config.dailyLimitMin > 0) append(" / 1日${config.dailyLimitMin}分まで")
-                if (config.dailyLaunchLimit > 0) append(" / 1日${config.dailyLaunchLimit}回まで")
-                if (config.friction != Prefs.FrictionMode.NONE) append(" / ${config.friction.label()}")
+        val rowGap = (10 * resources.displayMetrics.density).toInt()
+        val cellCount = entries.size + 1 // +1 は「追加」タイルの分
+        var index = 0
+        while (index < cellCount) {
+            val row = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { bottomMargin = rowGap }
             }
-            applyStatusPill(row.findViewById(R.id.appToggle), ok = true)
-            row.findViewById<Button>(R.id.appSettingsButton).visibility = View.GONE
-            row.setOnClickListener {
-                startActivity(Intent(this, AppPickerActivity::class.java))
+            for (col in 0 until 2) {
+                if (index >= cellCount) break
+                val cell = if (index < entries.size) {
+                    val (packageName, label, config) = entries[index]
+                    buildAppCard(pm, packageName, label, config, row)
+                } else {
+                    buildAddTile(row)
+                }
+                if (col == 0) {
+                    (cell.layoutParams as LinearLayout.LayoutParams).marginEnd = rowGap
+                }
+                row.addView(cell)
+                index++
             }
             container.addView(row)
         }
+    }
+
+    private fun buildAppCard(
+        pm: PackageManager,
+        packageName: String,
+        label: String,
+        config: Prefs.AppConfig,
+        parent: LinearLayout
+    ): View {
+        val card = LayoutInflater.from(this).inflate(R.layout.item_app_card, parent, false)
+        val icon = loadAppIcon(pm, packageName)
+        card.findViewById<ImageView>(R.id.appIcon).setImageDrawable(icon)
+        card.findViewById<TextView>(R.id.appLabel).text = label
+        card.findViewById<TextView>(R.id.appDetail).text = "${config.pauseSeconds}秒待つ"
+        applyDynamicCardColor(card, icon)
+        card.setOnClickListener {
+            startActivity(Intent(this, AppPickerActivity::class.java))
+        }
+        return card
+    }
+
+    private fun buildAddTile(parent: LinearLayout): View {
+        val tile = LayoutInflater.from(this).inflate(R.layout.item_app_add_tile, parent, false)
+        tile.setOnClickListener {
+            startActivity(Intent(this, AppPickerActivity::class.java))
+        }
+        return tile
+    }
+
+    /**
+     * アプリアイコンから代表色を抽出し、カードの背景色として使う
+     * （参考画像で Opera のカードが赤いのと同じ考え方）。
+     * 抽出した色をそのまま使うと、アイコンによっては明るすぎて白文字が
+     * 沈む・暗すぎて他のカードと見分けがつかない、ということが起きるため、
+     * 明度・彩度を白文字向けの範囲に補正してから使う。
+     */
+    private fun applyDynamicCardColor(card: View, icon: Drawable?) {
+        // loadAppIcon はアイコン取得に失敗すると null を返しうる。
+        // その場合は抽出自体をスキップしてフォールバック色を使う。
+        val extracted = icon?.let {
+            try {
+                val bitmap = drawableToBitmap(it)
+                val palette = Palette.from(bitmap).generate()
+                (palette.vibrantSwatch ?: palette.dominantSwatch ?: palette.mutedSwatch)?.rgb
+            } catch (e: Exception) {
+                null
+            }
+        } ?: ContextCompat.getColor(this, R.color.appCardFallback)
+
+        (card.background?.mutate() as? GradientDrawable)?.setColor(readableCardColor(extracted))
+    }
+
+    private fun readableCardColor(color: Int): Int {
+        val hsv = FloatArray(3)
+        Color.colorToHSV(color, hsv)
+        if (hsv[2] > 0.72f) hsv[2] = 0.55f
+        if (hsv[2] < 0.28f) hsv[2] = 0.38f
+        if (hsv[1] < 0.28f) hsv[1] = 0.4f
+        return Color.HSVToColor(hsv)
+    }
+
+    private fun drawableToBitmap(drawable: Drawable): Bitmap {
+        if (drawable is BitmapDrawable && drawable.bitmap != null) return drawable.bitmap
+        val width = drawable.intrinsicWidth.coerceAtLeast(1)
+        val height = drawable.intrinsicHeight.coerceAtLeast(1)
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+        return bitmap
     }
 
     /** アプリ本来のアイコンを読み込む。取得できない場合は汎用アイコンで代替する */

@@ -96,10 +96,27 @@
                 android:text="設定を開く" />
         </LinearLayout>
 
-        <!-- 今日の記録 -->
+        <!--
+          今日の記録。参考画像の「サマリー」カードに合わせて、
+          白カードの並びの中で主役になるグラデーションカードにしている。
+          文字は白固定（StatValue/StatLabel のテーマ依存色は使わない）。
+        -->
         <LinearLayout
-            style="@style/CardContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/home_summary_gradient"
+            android:padding="20dp"
             android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="今日の記録"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:paddingBottom="14dp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -107,18 +124,36 @@
                 android:orientation="horizontal">
 
                 <LinearLayout style="@style/StatBox">
-                    <TextView android:id="@+id/statResisted" style="@style/StatValue" />
-                    <TextView style="@style/StatLabel" android:text="今日やめた" />
+                    <TextView
+                        android:id="@+id/statResisted"
+                        style="@style/StatValue"
+                        android:textColor="#FFFFFF" />
+                    <TextView
+                        style="@style/StatLabel"
+                        android:textColor="#C2FFFFFF"
+                        android:text="今日やめた" />
                 </LinearLayout>
 
                 <LinearLayout style="@style/StatBox">
-                    <TextView android:id="@+id/statOpened" style="@style/StatValue" />
-                    <TextView style="@style/StatLabel" android:text="今日見た" />
+                    <TextView
+                        android:id="@+id/statOpened"
+                        style="@style/StatValue"
+                        android:textColor="#FFFFFF" />
+                    <TextView
+                        style="@style/StatLabel"
+                        android:textColor="#C2FFFFFF"
+                        android:text="今日見た" />
                 </LinearLayout>
 
                 <LinearLayout style="@style/StatBox">
-                    <TextView android:id="@+id/statStreak" style="@style/StatValue" />
-                    <TextView style="@style/StatLabel" android:text="連続日数" />
+                    <TextView
+                        android:id="@+id/statStreak"
+                        style="@style/StatValue"
+                        android:textColor="#FFFFFF" />
+                    <TextView
+                        style="@style/StatLabel"
+                        android:textColor="#C2FFFFFF"
+                        android:text="連続日数" />
                 </LinearLayout>
 
             </LinearLayout>
@@ -206,40 +241,27 @@
             android:paddingBottom="10dp"
             android:text="対象アプリ" />
 
-        <!-- 対象アプリの一覧はここに実行時に追加される（MainActivity.refreshTargetApps） -->
+        <TextView
+            android:id="@+id/emptyTargetsText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="まだ対象アプリがありません。「追加」タイルから選んでください。"
+            android:textColor="@color/textMuted"
+            android:textSize="13sp"
+            android:paddingBottom="10dp"
+            android:visibility="gone" />
+
+        <!--
+          対象アプリは2列のグリッドで並べる（参考画像に合わせた形）。
+          行ごとの横並び LinearLayout はここに実行時に追加される
+          （MainActivity.refreshTargetApps）。「追加」タイルは常に
+          最後のセルとして一緒に並ぶので、専用の追加ボタンはもう置かない。
+        -->
         <LinearLayout
             android:id="@+id/targetAppsContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical" />
-
-        <TextView
-            android:id="@+id/emptyTargetsText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="まだ対象アプリがありません。下のボタンから追加してください。"
-            android:textColor="@color/textMuted"
-            android:textSize="13sp"
-            android:gravity="center"
-            android:paddingTop="16dp"
-            android:paddingBottom="16dp" />
-
-        <Button
-            android:id="@+id/addAppButton"
-            style="@null"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/button_accent_primary"
-            android:gravity="center"
-            android:textColor="@color/bg"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            android:textAllCaps="false"
-            android:drawableStart="@drawable/ic_add"
-            android:drawableTint="@color/bg"
-            android:drawablePadding="8dp"
-            android:text="アプリを追加" />
 
     </LinearLayout>
 </ScrollView>
